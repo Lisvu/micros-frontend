@@ -24,3 +24,20 @@ export const enrollCourse = (id) => {
 export const getUserCourses = () => {
   return request.get('/course/enrolled');
 };
+
+// 获取模块内容
+export const getModuleContent = (courseId, moduleId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}`);
+};
+
+// 生成Quiz
+export const generateQuiz = (courseId, moduleId, contentId) => {
+  return request.post(`/course/${courseId}/module/${moduleId}/content/${contentId}/quiz`);
+};
+
+// 提交Quiz
+export const submitQuiz = (courseId, moduleId, contentId, answers) => {
+  return request.put(`/course/${courseId}/module/${moduleId}/content/${contentId}/quiz`, {
+    answers
+  });
+};

@@ -65,7 +65,7 @@ export default function ProfilePage() {
               <div>
                 <span style={{ color: "#999" }}>加入时间：</span>
                 <br />
-                <span>{userData?.createdAt || "未知"}</span>
+                <span>{userData?.created_at ? new Date(userData.created_at).toLocaleDateString() : "未知"}</span>
               </div>
               <div>
                 <span style={{ color: "#999" }}>用户状态：</span>
