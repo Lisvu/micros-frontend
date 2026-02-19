@@ -11,6 +11,7 @@ import MyCoursesPage from "./pages/MyCoursesPage";
 import DiscoverCoursesPage from "./pages/DiscoverCoursesPage";
 import ProfilePage from "./pages/ProfilePage";
 import Sidebar from "./components/Sidebar";
+import { getUser } from "./api/auth";
 import "./styles/layout.css";
 
 const { Content } = Layout;
@@ -18,12 +19,28 @@ const { Content } = Layout;
 function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 检查用户是否已登录
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
+    const checkAuth = async () => {
+      try {
+        const response = await getUser();
+        if (response.data && response.data.user) {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
   }, []);
+
+  if (loading) {
+    return <div>加载中...</div>; // 或者使用Antd的Spin组件
+  }
 
   return (
     <BrowserRouter>
