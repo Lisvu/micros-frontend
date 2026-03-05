@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import MajorList from "./pages/MajorList";
 import MajorDetail from "./pages/MajorDetail";
 import ModuleContent from "./pages/ModuleContent";
+import QuizPage from "./pages/QuizPage";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import MyCoursesPage from "./pages/MyCoursesPage";
@@ -63,6 +64,7 @@ function App() {
                 <Route path="/majors" element={<MajorList />} />
                 <Route path="/majors/:id" element={<MajorDetail />} />
                 <Route path="/course/:courseId/module/:moduleId" element={<ModuleContent />} />
+                <Route path="/course/:courseId/module/:moduleId/quiz/:contentId" element={<QuizPage />} />
                 <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>

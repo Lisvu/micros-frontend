@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Card, Button, Spin, Alert, Row, Col, Progress, Tag, Divider, Steps, Breadcrumb } from "antd";
 import { ArrowLeftOutlined, PlayCircleOutlined, FileTextOutlined, BugOutlined, CheckSquareOutlined, CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import QuizComponent from "../components/QuizComponent";
 import ProgrammingComponent from "../components/ProgrammingComponent";
 import { getModuleDetail } from "../api/course";
 
@@ -15,7 +14,6 @@ export default function ModuleContent() {
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeQuizId, setActiveQuizId] = useState(null);
   const [activeProgrammingId, setActiveProgrammingId] = useState(null);
   const [moduleInfo, setModuleInfo] = useState(null);
 
@@ -418,60 +416,50 @@ export default function ModuleContent() {
                     )}
 
                     {content.type === 'QUIZ' && (
-                      <div>
-                        {activeQuizId === content.id ? (
-                          <QuizComponent
-                            courseId={courseId}
-                            moduleId={moduleId}
-                            contentId={content.id}
-                          />
-                        ) : (
-                          <div style={{
-                            padding: "32px",
-                            background: "linear-gradient(135deg, #fef3c7 0%, #fef08a 100%)",
-                            borderRadius: "12px",
-                            textAlign: "center",
-                            border: "2px dashed #fbbf24",
-                          }}>
-                            <div style={{
-                              fontSize: "48px",
-                              marginBottom: "16px",
-                              opacity: 0.7,
-                            }}>
-                              📝
-                            </div>
-                            <h3 style={{
-                              margin: "0 0 8px 0",
-                              color: "#92400e",
-                              fontWeight: 600,
-                            }}>
-                              知识测验
-                            </h3>
-                            <p style={{
-                              margin: "0 0 24px 0",
-                              color: "#a16207",
-                              fontSize: "14px",
-                            }}>
-                              点击下方按钮开始测验，检验你对本节内容的掌握程度
-                            </p>
-                            <Button
-                              type="primary"
-                              size="large"
-                              onClick={() => setActiveQuizId(content.id)}
-                              icon={<CheckSquareOutlined />}
-                              style={{
-                                borderRadius: "8px",
-                                height: "44px",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                                border: "none",
-                              }}
-                            >
-                              开始测验
-                            </Button>
-                          </div>
-                        )}
+                      <div style={{
+                        padding: "32px",
+                        background: "linear-gradient(135deg, #fef3c7 0%, #fef08a 100%)",
+                        borderRadius: "12px",
+                        textAlign: "center",
+                        border: "2px dashed #fbbf24",
+                      }}>
+                        <div style={{
+                          fontSize: "48px",
+                          marginBottom: "16px",
+                          opacity: 0.7,
+                        }}>
+                          📝
+                        </div>
+                        <h3 style={{
+                          margin: "0 0 8px 0",
+                          color: "#92400e",
+                          fontWeight: 600,
+                        }}>
+                          知识测验
+                        </h3>
+                        <p style={{
+                          margin: "0 0 24px 0",
+                          color: "#a16207",
+                          fontSize: "14px",
+                        }}>
+                          点击下方按钮开始测验，检验你对本节内容的掌握程度
+                        </p>
+                        <Button
+                          type="primary"
+                          size="large"
+                          onClick={() => navigate(`/course/${courseId}/module/${moduleId}/quiz/${content.id}`)}
+                          icon={<CheckSquareOutlined />}
+                          style={{
+                            borderRadius: "8px",
+                            height: "44px",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                            border: "none",
+                          }}
+                        >
+                          开始测验
+                        </Button>
                       </div>
                     )}
 
