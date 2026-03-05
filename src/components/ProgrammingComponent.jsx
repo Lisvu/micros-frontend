@@ -30,6 +30,10 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId }) 
       };
       setInfo(infoData);
 
+      // 如果上次提交包含语言，则先确定要使用的语言
+      const lastLang = infoData.last_submission?.language || language;
+      setLanguage(lastLang);
+
       // 优先使用上次提交的代码回填，否则使用模板
       let fillFrom = '';
       if (infoData.last_submission?.code) {
@@ -39,7 +43,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId }) 
       }
 
       if (typeof fillFrom === 'object' && fillFrom !== null) {
-        setCode(fillFrom[language] || '');
+        setCode(fillFrom[lastLang] || '');
       } else {
         setCode(fillFrom);
       }
@@ -58,8 +62,14 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId }) 
 
   // 当语言切换并且后端返回按语言的模板时，自动替换编辑器内容为对应模板
   useEffect(() => {
-    // 当语言切换，如果 info.template 是按语言的对象，则替换为对应语言模板
-    if (info && info.template && typeof info.template === 'object') {
+    // 当语言切换，如果 info.template 是按语言的对象，则替换为对应语言模板。
+    // 但如果我们正好在加载时设置了语言并且这就是最后一次提交的语言，就不要覆盖代码。
+    if (
+      info &&
+      info.template &&
+      typeof info.template === 'object' &&
+      !(info.last_submission && info.last_submission.language === language && info.last_submission.code)
+    ) {
       setCode(info.template[language] || '');
     }
   }, [language, info]);
@@ -80,6 +90,10 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId }) 
       }
       setResult(res.data);
       message.success('提交已发送，查看结果');
+      // 保存返回的语言以防后续自动填充
+      if (res.data.language) {
+        setLanguage(res.data.language);
+      }
     } catch (err) {
       console.error('提交编程题错误:', err);
       message.error(err.response?.data?.message || err.message || '提交失败');
@@ -146,7 +160,17 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId }) 
         <Button type="primary" onClick={handleSubmit} loading={submitting}>
           提交代码
         </Button>
-        <Button onClick={() => { setCode(info.template || ''); }}>恢复模板</Button>
+        <Button onClick={() => {
+          // 恢复模板时也要考虑语言和模板可能是按语言存储的对象
+          if (info) {
+            let t = info.template || '';
+            if (typeof t === 'object' && t !== null) {
+              setCode(t[language] || '');
+            } else {
+              setCode(t);
+            }
+          }
+        }}>恢复模板</Button>
       </div>
 
       {result && (
