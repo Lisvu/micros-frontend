@@ -41,3 +41,13 @@ export const submitQuiz = (courseId, moduleId, contentId, answers) => {
     answers
   });
 };
+
+// 获取编程题信息
+export const getProgrammingInfo = (courseId, moduleId, contentId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming`);
+};
+
+// 提交编程题代码（评判/保存）
+export const submitProgramming = (courseId, moduleId, contentId, payload) => {
+  return request.put(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming`, payload);
+};

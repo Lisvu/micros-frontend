@@ -4,6 +4,7 @@ import { Card, Button, Typography, Spin, Alert } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import QuizComponent from "../components/QuizComponent";
+import ProgrammingComponent from "../components/ProgrammingComponent";
 import { getModuleDetail } from "../api/course";
 
 const { Title, Paragraph } = Typography;
@@ -14,6 +15,8 @@ export default function ModuleContent() {
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeQuizId, setActiveQuizId] = useState(null);
+  const [activeProgrammingId, setActiveProgrammingId] = useState(null);
 
   useEffect(() => {
     const fetchContents = async () => {
@@ -79,16 +82,42 @@ export default function ModuleContent() {
             )}
             
             {content.type === 'QUIZ' && (
-              <QuizComponent
-                courseId={courseId}
-                moduleId={moduleId}
-                contentId={content.id}
-              />
-            )}
+  <div>
+    {activeQuizId === content.id ? (
+      <QuizComponent
+        courseId={courseId}
+        moduleId={moduleId}
+        contentId={content.id}
+      />
+    ) : (
+      <Button
+        type="primary"
+        onClick={() => setActiveQuizId(content.id)}
+      >
+        进入小测
+      </Button>
+    )}
+  </div>
+)}
             
             {content.type === 'PROGRAMMING' && (
-              <Alert message="编程题" description="编程题功能开发中..." type="info" />
-            )}
+  <div>
+    {activeProgrammingId === content.id ? (
+      <ProgrammingComponent
+        courseId={courseId}
+        moduleId={moduleId}
+        contentId={content.id}
+      />
+    ) : (
+      <Button
+        type="primary"
+        onClick={() => setActiveProgrammingId(content.id)}
+      >
+        进入编程题
+      </Button>
+    )}
+  </div>
+)}
             
             {!['TEXT', 'VIDEO', 'QUIZ', 'PROGRAMMING'].includes(content.type) && (
               <Alert message={`未知内容类型: ${content.type}`} type="warning" />
