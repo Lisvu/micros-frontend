@@ -2,26 +2,47 @@ import { Card, Empty, Button, Row, Col, Progress, Tag, Spin, Alert, Divider } fr
 import { BookOutlined, PlayCircleOutlined, ClockCircleOutlined, TrophyOutlined, FireOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getUserCourses } from "../api/course";
+import { getUserCourses, getCourseProgress } from "../api/course";
 
 export default function MyCoursesPage() {
   const navigate = useNavigate();
   const [myCourses, setMyCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [courseProgress, setCourseProgress] = useState({});
 
   useEffect(() => {
-    const fetchUserCourses = async () => {
-      try {
-        setLoading(true);
-        const response = await getUserCourses();
-        setMyCourses(response.data);
-      } catch (err) {
-        setError(err.response?.data?.message || '获取我的课程失败');
-      } finally {
-        setLoading(false);
-      }
-    };
+   const fetchUserCourses = async () => {
+  try {
+    setLoading(true);
+
+    const response = await getUserCourses();
+    const courses = response.data;
+
+    setMyCourses(courses);
+
+    // 获取每门课程进度
+    const progressMap = {};
+
+    await Promise.all(
+      courses.map(async (course) => {
+        try {
+          const res = await getCourseProgress(course.id);
+          progressMap[course.id] = res.data.progress;
+        } catch {
+          progressMap[course.id] = 0;
+        }
+      })
+    );
+
+    setCourseProgress(progressMap);
+
+  } catch (err) {
+    setError(err.response?.data?.message || '获取我的课程失败');
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchUserCourses();
   }, []);
@@ -361,11 +382,11 @@ export default function MyCoursesPage() {
                           学习进度
                         </span>
                         <span style={{ fontSize: "12px", color: "#3b82f6", fontWeight: 600 }}>
-                          0%
+                          {courseProgress[course.id] || 0}%
                         </span>
                       </div>
                       <Progress
-                        percent={0}
+                        percent={courseProgress[course.id] || 0}
                         size="small"
                         strokeColor="#3b82f6"
                         trailColor="#e5e7eb"

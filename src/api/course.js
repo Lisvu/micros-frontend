@@ -47,6 +47,16 @@ export const getProgrammingInfo = (courseId, moduleId, contentId) => {
   return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming`);
 };
 
+// 获取课程进度
+export const getCourseProgress = (courseId) => {
+  return request.get(`/course/${courseId}/progress`);
+};
+
+// 获取模块进度
+export const getModuleProgress = (courseId, moduleId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/progress`);
+};
+
 // 提交编程题代码（评判/保存）
 export const submitProgramming = (courseId, moduleId, contentId, payload) => {
   return request.put(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming`, payload);

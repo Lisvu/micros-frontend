@@ -5,7 +5,7 @@ import { getProgrammingInfo, submitProgramming } from "../api/course";
 
 const { Option } = Select;
 
-export default function ProgrammingComponent({ courseId, moduleId, contentId }) {
+export default function ProgrammingComponent({ courseId, moduleId, contentId, onProgressUpdate }) {
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -94,6 +94,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId }) 
       if (res.data.language) {
         setLanguage(res.data.language);
       }
+      if (onProgressUpdate) onProgressUpdate();
     } catch (err) {
       console.error('提交编程题错误:', err);
       message.error(err.response?.data?.message || err.message || '提交失败');

@@ -32,7 +32,7 @@ export default function MajorList() {
   }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, minHeight: '100vh', background: '#f0f9ff' }}>
       <h2>微专业列表</h2>
       {courses.length > 0 ? (
         <ul>
@@ -44,7 +44,7 @@ export default function MajorList() {
               {course.description && <p>{course.description}</p>}
               {course.cover && (
                 <img
-                  src={`http://localhost:8000${course.cover}`}
+                  src={course.cover}
                   alt={course.title}
                   style={{ maxWidth: '200px', marginTop: '10px' }}
                 />

@@ -4,7 +4,7 @@ import { Card, Button, Spin, Alert, Row, Col, Progress, Tag, Divider, Steps, Bre
 import { ArrowLeftOutlined, PlayCircleOutlined, FileTextOutlined, BugOutlined, CheckSquareOutlined, CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ProgrammingComponent from "../components/ProgrammingComponent";
-import { getModuleDetail } from "../api/course";
+import { getModuleDetail, getModuleProgress } from "../api/course";
 
 const { Step } = Steps;
 
@@ -16,6 +16,16 @@ export default function ModuleContent() {
   const [error, setError] = useState(null);
   const [activeProgrammingId, setActiveProgrammingId] = useState(null);
   const [moduleInfo, setModuleInfo] = useState(null);
+  const [moduleProgress, setModuleProgress] = useState(0);
+
+  const updateProgress = async () => {
+    try {
+      const response = await getModuleProgress(courseId, moduleId);
+      setModuleProgress(response.data.progress);
+    } catch (err) {
+      setModuleProgress(0);
+    }
+  };
 
   useEffect(() => {
     const fetchContents = async () => {
@@ -32,8 +42,18 @@ export default function ModuleContent() {
       }
     };
 
+    const fetchModuleProgress = async () => {
+      try {
+        const response = await getModuleProgress(courseId, moduleId);
+        setModuleProgress(response.data.progress);
+      } catch (err) {
+        setModuleProgress(0);
+      }
+    };
+
     if (courseId && moduleId) {
       fetchContents();
+      fetchModuleProgress();
     }
   }, [courseId, moduleId]);
 
@@ -196,7 +216,7 @@ export default function ModuleContent() {
                 backdropFilter: "blur(10px)",
               }}>
                 <div style={{ fontSize: "24px", fontWeight: 700, marginBottom: "4px" }}>
-                  0%
+                  {moduleProgress}%
                 </div>
                 <div style={{ fontSize: "12px", opacity: 0.8 }}>完成进度</div>
               </div>
@@ -225,11 +245,11 @@ export default function ModuleContent() {
             📈 学习进度
           </span>
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
-            0 / {contents.length} 项内容
+            {moduleProgress}% 完成
           </span>
         </div>
         <Progress
-          percent={0}
+          percent={moduleProgress}
           size="small"
           strokeColor="#3b82f6"
           trailColor="#e5e7eb"
@@ -353,27 +373,7 @@ export default function ModuleContent() {
                       </div>
                     </div>
 
-                    {/* 完成状态指示器 */}
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}>
-                      <div style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        border: "2px solid #e5e7eb",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "white",
-                      }}>
-                        <ClockCircleOutlined style={{ color: "#9ca3af", fontSize: "16px" }} />
-                      </div>
-                      <span style={{ fontSize: "12px", color: "#6b7280" }}>未开始</span>
-                    </div>
+
                   </div>
 
                   <Divider style={{ margin: "16px 0" }} />
@@ -408,8 +408,20 @@ export default function ModuleContent() {
                             display: "block",
                           }}
                           poster="/video-poster.png"
+                          preload="metadata"
+                          onError={(e) => {
+                            console.error('Video load error:', e);
+                            console.log('Video source:', `http://localhost:8000${content.body}`);
+                          }}
+                          onLoadedData={(e) => {
+                            console.log('Video loaded successfully');
+                            console.log('Video duration:', e.target.duration);
+                            console.log('Video has audio:', e.target.audioTracks?.length > 0);
+                          }}
                         >
                           <source src={`http://localhost:8000${content.body}`} type="video/mp4" />
+                          <source src={`http://localhost:8000${content.body}`} type="video/webm" />
+                          <source src={`http://localhost:8000${content.body}`} type="video/ogg" />
                           您的浏览器不支持视频标签
                         </video>
                       </div>
@@ -470,6 +482,7 @@ export default function ModuleContent() {
                             courseId={courseId}
                             moduleId={moduleId}
                             contentId={content.id}
+                            onProgressUpdate={updateProgress}
                           />
                         ) : (
                           <div style={{

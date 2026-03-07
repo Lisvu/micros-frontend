@@ -13,6 +13,7 @@ import MyCoursesPage from "./pages/MyCoursesPage";
 import DiscoverCoursesPage from "./pages/DiscoverCoursesPage";
 import ProfilePage from "./pages/ProfilePage";
 import Sidebar from "./components/Sidebar";
+import OnlineLearningPage from "./pages/OnlineLearningPage";
 import { getUser } from "./api/auth";
 import "./styles/layout.css";
 
@@ -50,16 +51,14 @@ function App() {
         <Layout style={{ minHeight: "100vh" }}>
           <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
           <Layout
-            style={{
-              marginLeft: collapsed ? 80 : 220,
-              transition: "all 0.2s",
-            }}
+           
           >
             <Content className="main-content">
               <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/my-courses" element={<MyCoursesPage />} />
                 <Route path="/discover-courses" element={<DiscoverCoursesPage />} />
+                <Route path="/online-learning" element={<OnlineLearningPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/majors" element={<MajorList />} />
                 <Route path="/majors/:id" element={<MajorDetail />} />
