@@ -14,6 +14,8 @@ import DiscoverCoursesPage from "./pages/DiscoverCoursesPage";
 import ProfilePage from "./pages/ProfilePage";
 import Sidebar from "./components/Sidebar";
 import OnlineLearningPage from "./pages/OnlineLearningPage";
+import ExamsPage from "./pages/ExamsPage";
+import GradesPage from "./pages/GradesPage";
 import { getUser } from "./api/auth";
 import "./styles/layout.css";
 
@@ -65,6 +67,8 @@ function App() {
                 <Route path="/course/:courseId/module/:moduleId" element={<ModuleContent />} />
                 <Route path="/course/:courseId/module/:moduleId/quiz/:contentId" element={<QuizPage />} />
                 <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/exams" element={<ExamsPage />} />
+                <Route path="/grades" element={<GradesPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Content>
@@ -87,4 +91,3 @@ function App() {
 }
 
 export default App;
-

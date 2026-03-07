@@ -1,9 +1,13 @@
 import { Layout, Menu, Dropdown } from "antd";
 import {
-  HomeOutlined,
   BookOutlined,
   UserOutlined,
   LogoutOutlined,
+  CalendarOutlined,
+  TrophyOutlined,
+  SmileOutlined,
+  StarFilled,
+  HeartOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -29,21 +33,13 @@ export default function Navbar() {
   }, []);
 
   const getSelectedKey = () => {
-    if (location.pathname === "/dashboard") return "dashboard";
-    if (location.pathname === "/courses") return "courses";
-    if (location.pathname === "/my-courses") return "my-courses";
-    if (location.pathname === "/discover-courses") return "discover-courses";
     if (location.pathname === "/online-learning") return "online-learning";
-    return "dashboard";
+    if (location.pathname === "/exams") return "exams";
+    if (location.pathname === "/grades") return "grades";
+    return "online-learning";
   };
 
   const menuItems = [
-    {
-      key: "dashboard",
-      icon: <HomeOutlined />,
-      label: "学习首页",
-      onClick: () => navigate("/dashboard"),
-    },
     {
       key: "online-learning",
       icon: <BookOutlined />,
@@ -51,23 +47,19 @@ export default function Navbar() {
       onClick: () => navigate("/online-learning"),
     },
     {
-      key: "courses",
-      icon: <BookOutlined />,
-      label: "课程中心",
-      children: [
-        {
-          key: "my-courses",
-          label: "我的课程",
-          onClick: () => navigate("/my-courses"),
-        },
-        {
-          key: "discover-courses",
-          label: "发现课程",
-          onClick: () => navigate("/discover-courses"),
-        },
-      ],
+      key: "exams",
+      icon: <CalendarOutlined />,
+      label: "考试",
+      onClick: () => navigate("/exams"),
+    },
+    {
+      key: "grades",
+      icon: <TrophyOutlined />,
+      label: "查看成绩",
+      onClick: () => navigate("/grades"),
     },
   ];
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -98,24 +90,60 @@ export default function Navbar() {
   return (
     <Header
       style={{
-        background: "#cee7ff",
+        background: "linear-gradient(135deg, #e6f7ff 0%, #91d5ff 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 40px",
+        padding: "16px 40px",
+        borderRadius: "0 0 20px 20px",
+        boxShadow: "0 4px 16px rgba(64, 169, 255, 0.2)",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
+      {/* 装饰元素 */}
+      <div style={{
+        position: "absolute",
+        top: "10px",
+        left: "20px",
+        width: "60px",
+        height: "60px",
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #40a9ff 0%, #1890ff 100%)",
+        opacity: 0.3,
+        zIndex: 0
+      }} />
+      <div style={{
+        position: "absolute",
+        bottom: "10px",
+        right: "40px",
+        width: "80px",
+        height: "80px",
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #91d5ff 0%, #40a9ff 100%)",
+        opacity: 0.2,
+        zIndex: 0
+      }} />
+
       {/* 左侧 Logo */}
       <div
         style={{
-          color: "black",
-          fontSize: "20px",
+          color: "#1890ff",
+          fontSize: "24px",
           fontWeight: "bold",
           cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          position: "relative",
+          zIndex: 1,
+          textShadow: "2px 2px 4px rgba(64, 169, 255, 0.2)"
         }}
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate("/online-learning")}
       >
-        微专业平台
+        <StarFilled style={{ color: "#ffd666", fontSize: "28px" }} />
+        软件设计与开发微专业平台
+        <SmileOutlined style={{ color: "#40a9ff", fontSize: "20px" }} />
       </div>
 
       {/* 中间菜单 */}
@@ -128,7 +156,15 @@ export default function Navbar() {
           flex: 1,
           marginLeft: 40,
           minWidth: 500,
+          position: "relative",
+          zIndex: 1
         }}
+        itemStyle={{
+          borderRadius: "20px",
+          margin: "0 8px",
+          transition: "all 0.3s ease"
+        }}
+        menuItemSelectedIcon={<SmileOutlined style={{ color: "#ff6b6b" }} />}
       />
 
       {/* 右侧用户 */}
@@ -139,15 +175,38 @@ export default function Navbar() {
       >
         <div
           style={{
-            color: "black",
+            color: "#1890ff",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 12,
+            background: "rgba(255, 255, 255, 0.8)",
+            padding: "8px 16px",
+            borderRadius: "20px",
+            boxShadow: "0 2px 8px rgba(64, 169, 255, 0.2)",
+            transition: "all 0.3s ease",
+            position: "relative",
+            zIndex: 1,
+            '&:hover': {
+              transform: "translateY(-2px)",
+              boxShadow: "0 4px 12px rgba(64, 169, 255, 0.3)"
+            }
           }}
         >
-          <UserOutlined />
-          {userName}
+          <div style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #40a9ff 0%, #1890ff 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            boxShadow: "0 2px 4px rgba(64, 169, 255, 0.3)"
+          }}>
+            <UserOutlined />
+          </div>
+          <span style={{ fontWeight: "500" }}>{userName}</span>
         </div>
       </Dropdown>
     </Header>

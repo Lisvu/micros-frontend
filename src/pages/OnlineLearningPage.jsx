@@ -620,20 +620,7 @@ export default function OnlineLearningPage() {
                               e.target.src = defaultCover;
                             }}
                           />
-                          <div style={{
-                            position: "absolute",
-                            top: 12,
-                            right: 12,
-                            background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
-                            color: "white",
-                            padding: "6px 16px",
-                            borderRadius: "16px",
-                            fontSize: 12,
-                            fontWeight: "500",
-                            boxShadow: "0 2px 4px rgba(82, 196, 26, 0.3)"
-                          }}>
-                            {progress}% 完成
-                          </div>
+
                         </div>
                       }
                     >
@@ -665,15 +652,12 @@ export default function OnlineLearningPage() {
                         </p>
                         <div style={{ marginBottom: 16 }}>
                           <div style={{ 
-                            display: "flex", 
-                            justifyContent: "space-between", 
                             marginBottom: 8, 
                             fontSize: 14, 
                             color: "#666",
                             fontWeight: "500"
                           }}>
-                            <span>学习进度</span>
-                            <span style={{ color: "#52c41a" }}>{progress}%</span>
+                            学习进度
                           </div>
                           <Progress
                             percent={progress}
