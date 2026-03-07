@@ -26,6 +26,11 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // 处理退出登录
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
     // 检查用户是否已登录
     const checkAuth = async () => {
@@ -51,15 +56,15 @@ function App() {
     <BrowserRouter>
       {isAuthenticated ? (
         <Layout style={{ minHeight: "100vh" }}>
-          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} onLogout={handleLogout} />
           <Layout
            
           >
             <Content className="main-content">
               <Routes>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/my-courses" element={<MyCoursesPage />} />
-                <Route path="/discover-courses" element={<DiscoverCoursesPage />} />
+                
+                
+              
                 <Route path="/online-learning" element={<OnlineLearningPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/majors" element={<MajorList />} />
@@ -69,7 +74,8 @@ function App() {
                 <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="/exams" element={<ExamsPage />} />
                 <Route path="/grades" element={<GradesPage />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<Navigate to="/online-learning" replace />} />
+                <Route path="*" element={<Navigate to="/online-learning" replace />} />
               </Routes>
             </Content>
           </Layout>

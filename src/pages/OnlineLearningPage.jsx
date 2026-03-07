@@ -392,19 +392,7 @@ export default function OnlineLearningPage() {
                               e.target.src = defaultCover;
                             }}
                           />
-                          <div style={{
-                            position: "absolute",
-                            top: 12,
-                            left: 12,
-                            background: "rgba(64, 169, 255, 0.9)",
-                            color: "white",
-                            padding: "6px 12px",
-                            borderRadius: "16px",
-                            fontSize: 12,
-                            fontWeight: "500"
-                          }}>
-                            新课程
-                          </div>
+
                         </div>
                       }
                     >

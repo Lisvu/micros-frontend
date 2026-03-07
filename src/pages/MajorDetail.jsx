@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Card, Button, Typography, Image, Spin, Alert, Row, Col, Progress, Tag, Divider, Breadcrumb, Statistic } from "antd";
-import { BookOutlined, PlayCircleOutlined, ClockCircleOutlined, UserOutlined, TrophyOutlined, FireOutlined, ArrowLeftOutlined, CloudOutlined, SunOutlined, StarFilled, HeartOutlined, SmileOutlined } from "@ant-design/icons";
-import { getCourseDetail, getCourseProgress, getModuleProgress, getUserCourses } from "../api/course";
+import { useEffect, useState, useCallback } from "react";
+import { Card, Button, Typography, Image, Spin, Alert, Row, Col, Progress, Tag, Divider, Breadcrumb, Statistic, Form, Input, Select, List, Avatar, Badge, Modal, message } from "antd";
+import { BookOutlined, PlayCircleOutlined, ClockCircleOutlined, UserOutlined, TrophyOutlined, FireOutlined, ArrowLeftOutlined, CloudOutlined, SunOutlined, StarFilled, HeartOutlined, SmileOutlined, MessageOutlined, SendOutlined, PlusOutlined, CommentOutlined, LikeOutlined, EyeOutlined } from "@ant-design/icons";
+import { getCourseDetail, getCourseProgress, getModuleProgress, getUserCourses, getCourseDiscussions, createDiscussion } from "../api/course";
 
 // 课程封面图片映射 - 使用与 OnlineLearningPage 相同的图片来源
 const courseCovers = {
@@ -16,7 +16,8 @@ const courseCovers = {
 // 默认封面图片
 const defaultCover = "https://picsum.photos/seed/course/800/450";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
+const { TextArea } = Input;
 
 export default function MajorDetail() {
   const { id } = useParams();
@@ -28,6 +29,10 @@ export default function MajorDetail() {
 const [completedModules, setCompletedModules] = useState(0);
 const [moduleProgresses, setModuleProgresses] = useState({}); // 存储每个模块的进度
 const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
+  const [questions, setQuestions] = useState([]); // 讨论区问题列表
+  const [showAskModal, setShowAskModal] = useState(false); // 显示提问模态框
+  const [form] = Form.useForm(); // 提问表单
+  const [loadingQuestions, setLoadingQuestions] = useState(false); // 加载问题列表的状态
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
@@ -101,6 +106,89 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
       fetchModuleProgresses();
     }
   }, [course, id, isEnrolled]);
+
+  // 获取讨论区问题列表
+  const fetchQuestions = useCallback(async () => {
+    if (!isEnrolled) return;
+    
+    try {
+      setLoadingQuestions(true);
+      // 调用API获取问题列表
+      const response = await getCourseDiscussions(id);
+      const questionsData = response.data.data;
+      
+      // 格式化问题数据
+      const formattedQuestions = questionsData.map(question => ({
+        id: question.id,
+        title: question.title,
+        content: question.content,
+        moduleId: question.module_id,
+        moduleTitle: question.module?.title || "通用问题",
+        author: {
+          id: question.user?.id || 0,
+          name: question.user?.name || "未知用户",
+          avatar: `https://picsum.photos/seed/user${question.user?.id || Math.floor(Math.random() * 10)}/100/100`
+        },
+        createdAt: new Date(question.created_at).toLocaleString(),
+        replies: question.answer ? 1 : 0,
+        likes: question.likes || 0,
+        views: question.views || 0,
+        answer: question.answer,
+        answeredBy: question.answerer?.name || null
+      }));
+      
+      setQuestions(formattedQuestions);
+    } catch (err) {
+      console.error('获取问题列表失败:', err);
+      message.error('获取问题列表失败');
+    } finally {
+      setLoadingQuestions(false);
+    }
+  }, [isEnrolled, id]);
+
+  // 当用户已选课时，获取讨论区问题列表
+  useEffect(() => {
+    if (isEnrolled) {
+      fetchQuestions();
+    }
+  }, [isEnrolled, fetchQuestions]);
+
+  // 处理提问
+  const handleAskQuestion = async (values) => {
+    try {
+      // 调用API提交问题
+      const response = await createDiscussion(id, {
+        title: values.title,
+        content: values.content,
+        module_id: values.moduleId || null
+      });
+      
+      const newQuestion = {
+        id: response.data.data.id,
+        title: response.data.data.title,
+        content: response.data.data.content,
+        moduleId: response.data.data.module_id,
+        moduleTitle: response.data.data.module?.title || "通用问题",
+        author: {
+          id: response.data.data.user?.id || 0,
+          name: response.data.data.user?.name || "当前用户",
+          avatar: `https://picsum.photos/seed/user${response.data.data.user?.id || Math.floor(Math.random() * 10)}/100/100`
+        },
+        createdAt: new Date(response.data.data.created_at).toLocaleString(),
+        replies: 0,
+        likes: 0,
+        views: 0
+      };
+      
+      setQuestions([newQuestion, ...questions]);
+      setShowAskModal(false);
+      form.resetFields();
+      message.success('问题提交成功');
+    } catch (err) {
+      console.error('提交问题失败:', err);
+      message.error('提交问题失败');
+    }
+  };
 
   if (loading) {
     return (
@@ -473,212 +561,409 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
 
       {/* 模块列表 - 仅当已选课时显示 */}
       {isEnrolled ? (
-        <div style={{ marginBottom: "24px" }}>
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "24px",
-            padding: "16px 20px",
-            background: "white",
-            borderRadius: "16px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            border: "2px solid #f0f9ff"
-          }}>
-            <h2 style={{
-              margin: "0",
-              fontSize: "24px",
-              fontWeight: 700,
-              color: "#1890ff",
+        <>
+          <div style={{ marginBottom: "24px" }}>
+            <div style={{
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: "12px",
+              marginBottom: "24px",
+              padding: "16px 20px",
+              background: "white",
+              borderRadius: "16px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+              border: "2px solid #f0f9ff"
             }}>
-              <BookOutlined style={{ fontSize: "24px" }} />
-              课程模块
-              <Tag 
-                color="blue" 
-                style={{ 
-                  borderRadius: "16px", 
-                  fontWeight: 500,
-                  padding: "4px 16px",
-                  background: "rgba(64, 169, 255, 0.1)",
-                  border: "1px solid #91d5ff"
-                }}
-              >
-                {moduleCount} 个模块
-              </Tag>
-            </h2>
-          </div>
+              <h2 style={{
+                margin: "0",
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#1890ff",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}>
+                <BookOutlined style={{ fontSize: "24px" }} />
+                课程模块
+                <Tag 
+                  color="blue" 
+                  style={{ 
+                    borderRadius: "16px", 
+                    fontWeight: 500,
+                    padding: "4px 16px",
+                    background: "rgba(64, 169, 255, 0.1)",
+                    border: "1px solid #91d5ff"
+                  }}
+                >
+                  {moduleCount} 个模块
+                </Tag>
+              </h2>
+            </div>
 
-          {course.modules && course.modules.length > 0 ? (
-            <Row gutter={[24, 24]}>
-              {course.modules.map((module, index) => {
-                // 获取当前模块的进度
-                const moduleProgress = moduleProgresses[module.id] || 0;
-                
-                // 模块进度判断逻辑：
-                // - 进度为100%：已完成
-                // - 进度不为0：进行中
-                // - 进度为0：未开始
-                const isCompleted = moduleProgress === 100;
-                const isCurrent = moduleProgress > 0;
+            {course.modules && course.modules.length > 0 ? (
+              <Row gutter={[24, 24]}>
+                {course.modules.map((module, index) => {
+                  // 获取当前模块的进度
+                  const moduleProgress = moduleProgresses[module.id] || 0;
+                  
+                  // 模块进度判断逻辑：
+                  // - 进度为100%：已完成
+                  // - 进度不为0：进行中
+                  // - 进度为0：未开始
+                  const isCompleted = moduleProgress === 100;
+                  const isCurrent = moduleProgress > 0;
 
-                return (
-                  <Col xs={24} sm={12} lg={8} key={module.id}>
-                    <Card
-                      hoverable
-                      style={{
-                        borderRadius: "20px",
-                        border: "none",
-                        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
-                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                        height: "100%",
-                        position: "relative",
-                        overflow: "hidden",
-                        border: isCompleted ? "3px solid #10b981" : isCurrent ? "3px solid #3b82f6" : "3px solid #f0f9ff",
-                        background: "white"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = "0 20px 25px rgba(0, 0, 0, 0.15)";
-                        e.currentTarget.style.transform = "translateY(-8px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0, 0, 0, 0.1)";
-                        e.currentTarget.style.transform = "translateY(0)";
-                      }}
-                      onClick={() => navigate(`/course/${id}/module/${module.id}`)}
-                    >
-                      {/* 模块状态指示器 */}
-                      <div style={{
-                        position: "absolute",
-                        top: "16px",
-                        right: "16px",
-                        zIndex: 2,
-                      }}>
+                  return (
+                    <Col xs={24} sm={12} lg={8} key={module.id}>
+                      <Card
+                        hoverable
+                        style={{
+                          borderRadius: "20px",
+                          border: "none",
+                          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          height: "100%",
+                          position: "relative",
+                          overflow: "hidden",
+                          border: isCompleted ? "3px solid #10b981" : isCurrent ? "3px solid #3b82f6" : "3px solid #f0f9ff",
+                          background: "white"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = "0 20px 25px rgba(0, 0, 0, 0.15)";
+                          e.currentTarget.style.transform = "translateY(-8px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = "0 4px 16px rgba(0, 0, 0, 0.1)";
+                          e.currentTarget.style.transform = "translateY(0)";
+                        }}
+                        onClick={() => navigate(`/course/${id}/module/${module.id}`)}
+                      >
+                        {/* 模块状态指示器 */}
                         <div style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                          background: isCompleted
-                            ? "linear-gradient(135deg, #10b981, #059669)"
-                            : isCurrent
-                            ? "linear-gradient(135deg, #3b82f6, #2563eb)"
-                            : "linear-gradient(135deg, #f3f4f6, #e5e7eb)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontSize: "18px",
-                          fontWeight: 600,
-                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
-                        }}>
-                          {isCompleted ? "✓" : index + 1}
-                        </div>
-                      </div>
-
-                      <div style={{ padding: "24px 20px 20px 20px" }}>
-                        <h3 style={{
-                          margin: "0 0 16px 0",
-                          fontSize: "18px",
-                          fontWeight: 700,
-                          color: isCompleted ? "#10b981" : isCurrent ? "#3b82f6" : "#1f2937",
-                          lineHeight: "1.4",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px"
-                        }}>
-                          {isCompleted ? <HeartOutlined style={{ color: "#10b981" }} /> : null}
-                          {module.title}
-                        </h3>
-
-                        {module.description && (
-                          <p style={{
-                            margin: "0 0 20px 0",
-                            fontSize: "14px",
-                            color: "#666",
-                            lineHeight: "1.5",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            background: "#f9f9f9",
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #f0f0f0"
-                          }}>
-                            {module.description}
-                          </p>
-                        )}
-
-                        {/* 模块信息 */}
-                        <div style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: "8px",
+                          position: "absolute",
+                          top: "16px",
+                          right: "16px",
+                          zIndex: 2,
                         }}>
                           <div style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            background: isCompleted
+                              ? "linear-gradient(135deg, #10b981, #059669)"
+                              : isCurrent
+                              ? "linear-gradient(135deg, #3b82f6, #2563eb)"
+                              : "linear-gradient(135deg, #f3f4f6, #e5e7eb)",
                             display: "flex",
                             alignItems: "center",
-                            gap: "6px",
-                            fontSize: "14px",
-                            color: "#666",
-                            fontWeight: "500"
+                            justifyContent: "center",
+                            color: "white",
+                            fontSize: "18px",
+                            fontWeight: 600,
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
                           }}>
-                            <ClockCircleOutlined style={{ color: "#999" }} />
-                            <span>预计 30 分钟</span>
+                            {isCompleted ? "✓" : index + 1}
                           </div>
-                          <Tag
-                            color={isCompleted ? "success" : isCurrent ? "processing" : "default"}
-                            size="small"
-                            style={{ 
-                              borderRadius: "16px",
-                              padding: "4px 12px",
-                              fontWeight: "500"
-                            }}
-                          >
-                            {isCompleted ? "已完成" : isCurrent ? "进行中" : "未开始"}
-                          </Tag>
                         </div>
-                        
-                        {/* 模块进度条 */}
-                        <Progress
-                          percent={moduleProgress}
-                          size="small"
-                          strokeColor={isCompleted ? "#10b981" : isCurrent ? "#3b82f6" : "#e5e7eb"}
-                          trailColor="#f0f0f0"
-                          showInfo={false}
-                          style={{ borderRadius: "4px" }}
-                        />
-                      </div>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
-          ) : (
-            <Card
-              style={{
-                borderRadius: "16px",
-                textAlign: "center",
-                padding: "60px 20px",
-                border: "2px dashed #e5e7eb",
-                background: "#fafbfc",
-              }}
-            >
-              <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.5 }}>
-                📚
+
+                        <div style={{ padding: "24px 20px 20px 20px" }}>
+                          <h3 style={{
+                            margin: "0 0 16px 0",
+                            fontSize: "18px",
+                            fontWeight: 700,
+                            color: isCompleted ? "#10b981" : isCurrent ? "#3b82f6" : "#1f2937",
+                            lineHeight: "1.4",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px"
+                          }}>
+                            {isCompleted ? <HeartOutlined style={{ color: "#10b981" }} /> : null}
+                            {module.title}
+                          </h3>
+
+                          {module.description && (
+                            <p style={{
+                              margin: "0 0 20px 0",
+                              fontSize: "14px",
+                              color: "#666",
+                              lineHeight: "1.5",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              background: "#f9f9f9",
+                              padding: "12px",
+                              borderRadius: "8px",
+                              border: "1px solid #f0f0f0"
+                            }}>
+                              {module.description}
+                            </p>
+                          )}
+
+                          {/* 模块信息 */}
+                          <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "8px",
+                          }}>
+                            <div style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "14px",
+                              color: "#666",
+                              fontWeight: "500"
+                            }}>
+                              <ClockCircleOutlined style={{ color: "#999" }} />
+                              <span>预计 30 分钟</span>
+                            </div>
+                            <Tag
+                              color={isCompleted ? "success" : isCurrent ? "processing" : "default"}
+                              size="small"
+                              style={{ 
+                                borderRadius: "16px",
+                                padding: "4px 12px",
+                                fontWeight: "500"
+                              }}
+                            >
+                              {isCompleted ? "已完成" : isCurrent ? "进行中" : "未开始"}
+                            </Tag>
+                          </div>
+                          
+                          {/* 模块进度条 */}
+                          <Progress
+                            percent={moduleProgress}
+                            size="small"
+                            strokeColor={isCompleted ? "#10b981" : isCurrent ? "#3b82f6" : "#e5e7eb"}
+                            trailColor="#f0f0f0"
+                            showInfo={false}
+                            style={{ borderRadius: "4px" }}
+                          />
+                        </div>
+                      </Card>
+                    </Col>
+                  );
+                })}
+              </Row>
+            ) : (
+              <Card
+                style={{
+                  borderRadius: "16px",
+                  textAlign: "center",
+                  padding: "60px 20px",
+                  border: "2px dashed #e5e7eb",
+                  background: "#fafbfc",
+                }}
+              >
+                <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.5 }}>
+                  📚
+                </div>
+                <h3 style={{ color: "#6b7280", marginBottom: "8px" }}>
+                  暂无学习模块
+                </h3>
+                <p style={{ color: "#9ca3af" }}>
+                  该课程正在准备学习内容，请稍后再来查看
+                </p>
+              </Card>
+            )}
+          </div>
+
+          {/* 讨论区部分 */}
+          <div style={{ marginBottom: "24px" }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "24px",
+              padding: "16px 20px",
+              background: "white",
+              borderRadius: "16px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+              border: "2px solid #f0f9ff"
+            }}>
+              <h2 style={{
+                margin: "0",
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#1890ff",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}>
+                <MessageOutlined style={{ fontSize: "24px" }} />
+                课程讨论区
+                <Tag 
+                  color="purple" 
+                  style={{ 
+                    borderRadius: "16px", 
+                    fontWeight: 500,
+                    padding: "4px 16px",
+                    background: "rgba(139, 92, 246, 0.1)",
+                    border: "1px solid #d3adf7"
+                  }}
+                >
+                  {questions.length} 个问题
+                </Tag>
+              </h2>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setShowAskModal(true)}
+                style={{
+                  borderRadius: "20px",
+                  padding: "8px 24px",
+                  background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                  border: "none",
+                  boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  '&:hover': {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 6px 16px rgba(139, 92, 246, 0.4)"
+                  }
+                }}
+              >
+                提出问题
+              </Button>
+            </div>
+
+            {loadingQuestions ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+                <Spin size="large" tip="加载问题列表..." />
               </div>
-              <h3 style={{ color: "#6b7280", marginBottom: "8px" }}>
-                暂无学习模块
-              </h3>
-              <p style={{ color: "#9ca3af" }}>
-                该课程正在准备学习内容，请稍后再来查看
-              </p>
-            </Card>
-          )}
-        </div>
+            ) : questions.length > 0 ? (
+              <List
+                itemLayout="vertical"
+                dataSource={questions}
+                renderItem={(question) => (
+                  <List.Item
+                    style={{
+                      background: "white",
+                      borderRadius: "16px",
+                      marginBottom: "16px",
+                      padding: "20px",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      border: "2px solid #f0f9ff",
+                      transition: "all 0.3s ease",
+                      '&:hover': {
+                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                        borderColor: "#d3adf7"
+                      }
+                    }}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar src={question.author.avatar} alt={question.author.name} style={{ 
+                          width: "48px", 
+                          height: "48px",
+                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)"
+                        }} />
+                      }
+                      title={
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <span style={{ 
+                            fontSize: "18px", 
+                            fontWeight: "600", 
+                            color: "#1890ff",
+                            flex: 1
+                          }}>
+                            {question.title}
+                          </span>
+                          {question.moduleId && (
+                            <Tag 
+                              color="blue" 
+                              style={{ 
+                                borderRadius: "12px",
+                                padding: "4px 12px",
+                                fontSize: "12px",
+                                background: "rgba(64, 169, 255, 0.1)",
+                                border: "1px solid #91d5ff"
+                              }}
+                            >
+                              {question.moduleTitle}
+                            </Tag>
+                          )}
+                        </div>
+                      }
+                      description={
+                        <div style={{ marginTop: "8px" }}>
+                          <div style={{ 
+                            fontSize: "14px", 
+                            color: "#666",
+                            marginBottom: "8px",
+                            lineHeight: "1.5"
+                          }}>
+                            {question.content}
+                          </div>
+                          <div style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "16px",
+                            fontSize: "12px",
+                            color: "#999"
+                          }}>
+                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <UserOutlined style={{ fontSize: "12px" }} />
+                              {question.author.name}
+                            </span>
+                            <span>{question.createdAt}</span>
+                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <EyeOutlined style={{ fontSize: "12px" }} />
+                              {question.views}
+                            </span>
+                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <CommentOutlined style={{ fontSize: "12px" }} />
+                              {question.replies}
+                            </span>
+                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <LikeOutlined style={{ fontSize: "12px" }} />
+                              {question.likes}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <Card
+                style={{
+                  borderRadius: "16px",
+                  textAlign: "center",
+                  padding: "60px 20px",
+                  border: "2px dashed #e5e7eb",
+                  background: "#fafbfc",
+                }}
+              >
+                <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.5 }}>
+                  💬
+                </div>
+                <h3 style={{ color: "#6b7280", marginBottom: "8px" }}>
+                  暂无讨论
+                </h3>
+                <p style={{ color: "#9ca3af", marginBottom: "24px" }}>
+                  成为第一个提问的人吧！
+                </p>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setShowAskModal(true)}
+                  style={{
+                    borderRadius: "20px",
+                    padding: "8px 24px",
+                    background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                    border: "none",
+                    boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)"
+                  }}
+                >
+                  提出第一个问题
+                </Button>
+              </Card>
+            )}
+          </div>
+        </>
       ) : (
         <Card
           style={{
@@ -725,6 +1010,141 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
           </Button>
         </Card>
       )}
+
+      {/* 提问模态框 */}
+      <Modal
+        title={
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px",
+            color: "#1890ff"
+          }}>
+            <MessageOutlined style={{ fontSize: "20px" }} />
+            <span style={{ fontSize: "18px", fontWeight: "600" }}>提出问题</span>
+          </div>
+        }
+        open={showAskModal}
+        onCancel={() => setShowAskModal(false)}
+        footer={null}
+        width={600}
+        style={{
+          borderRadius: "20px",
+          overflow: "hidden"
+        }}
+        bodyStyle={{
+          padding: "24px",
+          background: "linear-gradient(135deg, #f9f0ff 0%, #f0f9ff 100%)"
+        }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAskQuestion}
+        >
+          <Form.Item
+            name="title"
+            label="问题标题"
+            rules={[{ required: true, message: "请输入问题标题" }, { min: 5, message: "标题至少5个字符" }]}
+            style={{ marginBottom: "16px" }}
+          >
+            <Input 
+              placeholder="请输入问题标题" 
+              style={{
+                borderRadius: "12px",
+                height: "48px",
+                fontSize: "16px",
+                border: "2px solid #d3adf7",
+                '&:focus': {
+                  borderColor: '#8b5cf6',
+                  boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.2)'
+                }
+              }}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="moduleId"
+            label="选择模块（可选）"
+            style={{ marginBottom: "16px" }}
+          >
+            <Select 
+              placeholder="选择问题对应的模块，不选则为通用问题"
+              style={{
+                borderRadius: "12px",
+                height: "48px",
+                border: "2px solid #d3adf7",
+                '&:focus': {
+                  borderColor: '#8b5cf6'
+                }
+              }}
+              allowClear
+            >
+              {course.modules && course.modules.map(module => (
+                <Select.Option key={module.id} value={module.id}>
+                  {module.title}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            name="content"
+            label="问题内容"
+            rules={[{ required: true, message: "请输入问题内容" }, { min: 10, message: "内容至少10个字符" }]}
+            style={{ marginBottom: "24px" }}
+          >
+            <TextArea 
+              placeholder="请详细描述你的问题..."
+              rows={6}
+              style={{
+                borderRadius: "12px",
+                fontSize: "16px",
+                border: "2px solid #d3adf7",
+                '&:focus': {
+                  borderColor: '#8b5cf6',
+                  boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.2)'
+                }
+              }}
+            />
+          </Form.Item>
+          
+          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <Button
+              onClick={() => setShowAskModal(false)}
+              style={{
+                borderRadius: "20px",
+                padding: "8px 24px",
+                border: "2px solid #d3adf7",
+                color: "#8b5cf6",
+                fontWeight: "500"
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SendOutlined />}
+              style={{
+                borderRadius: "20px",
+                padding: "8px 32px",
+                background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                border: "none",
+                boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
+                fontWeight: "600",
+                transition: "all 0.3s ease",
+                '&:hover': {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 16px rgba(139, 92, 246, 0.4)"
+                }
+              }}
+            >
+              提交问题
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 }

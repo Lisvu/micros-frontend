@@ -15,7 +15,7 @@ import { getUser } from "../api/auth";
 
 const { Header } = Layout;
 
-export default function Navbar() {
+export default function Navbar({ onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [userName, setUserName] = useState("");
@@ -64,6 +64,10 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    // 通知父组件更新认证状态
+    if (onLogout) {
+      onLogout();
+    }
     navigate("/");
   };
 
