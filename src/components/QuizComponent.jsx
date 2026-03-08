@@ -71,7 +71,14 @@ export default function QuizComponent({ courseId, moduleId, contentId, onProgres
 
   const getOptionIdsFromLetters = (question, letterAnswers) => {
     if (!Array.isArray(letterAnswers)) return [];
-    return letterAnswers.map(letter => getOptionIdFromLetter(question, letter));
+    console.log('getOptionIdsFromLetters - letterAnswers:', letterAnswers);
+    const optionIds = letterAnswers.map(letter => {
+      const id = getOptionIdFromLetter(question, letter);
+      console.log('getOptionIdFromLetter - letter:', letter, 'id:', id);
+      return id;
+    });
+    console.log('getOptionIdsFromLetters - optionIds:', optionIds);
+    return optionIds;
   };
 
   const handleSubmit = async () => {
@@ -94,7 +101,7 @@ export default function QuizComponent({ courseId, moduleId, contentId, onProgres
         } else if (question.question_type === 'multiple_select') {
           // 多选题：转换字母数组为选项ID数组
           const optionIds = getOptionIdsFromLetters(question, answer);
-          convertedAnswer = optionIds.join(',');
+          convertedAnswer = optionIds;
         }
         // fill_blank不需要转换，直接发送文本
 
@@ -214,15 +221,15 @@ export default function QuizComponent({ courseId, moduleId, contentId, onProgres
           </div>
           
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ClockCircleOutlined style={{ color: '#4a90e2' }} />
-              <Text>共 {quiz.questions.length} 道题目</Text>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ClockCircleOutlined style={{ color: '#4a90e2' }} />
+                <Text>共 {quiz.questions.length} 道题目</Text>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <BarChartOutlined style={{ color: '#4a90e2' }} />
+                <Text>总分: {quiz.total_points || quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0)} 分</Text>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <BarChartOutlined style={{ color: '#4a90e2' }} />
-              <Text>总分: {quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0)} 分</Text>
-            </div>
-          </div>
           
           {/* 答题进度条 */}
           <div style={{ marginTop: 8 }}>
@@ -293,7 +300,7 @@ export default function QuizComponent({ courseId, moduleId, contentId, onProgres
                     )}
                   </div>
                   <Tag size="small" color="blue">
-                    {question.points || 1} 分
+                    {question.points || 10} 分
                   </Tag>
                 </div>
 

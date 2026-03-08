@@ -7,6 +7,7 @@ import MajorList from "./pages/MajorList";
 import MajorDetail from "./pages/MajorDetail";
 import ModuleContent from "./pages/ModuleContent";
 import QuizPage from "./pages/QuizPage";
+import QuizHistoryPage from "./pages/QuizHistoryPage";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import MyCoursesPage from "./pages/MyCoursesPage";
@@ -71,6 +72,7 @@ function App() {
                 <Route path="/majors/:id" element={<MajorDetail />} />
                 <Route path="/course/:courseId/module/:moduleId" element={<ModuleContent />} />
                 <Route path="/course/:courseId/module/:moduleId/quiz/:contentId" element={<QuizPage />} />
+                <Route path="/course/:courseId/module/:moduleId/quiz/:contentId/history" element={<QuizHistoryPage />} />
                 <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="/exams" element={<ExamsPage />} />
                 <Route path="/grades" element={<GradesPage />} />

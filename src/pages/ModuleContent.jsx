@@ -1,10 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Card, Button, Spin, Alert, Row, Col, Progress, Tag, Divider, Steps, Breadcrumb } from "antd";
-import { ArrowLeftOutlined, PlayCircleOutlined, FileTextOutlined, BugOutlined, CheckSquareOutlined, CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Card, Button, Spin, Alert, Row, Col, Progress, Tag, Divider, Steps, Breadcrumb, Modal, List } from "antd";
+import { ArrowLeftOutlined, PlayCircleOutlined, FileTextOutlined, BugOutlined, CheckSquareOutlined, CheckCircleOutlined, ClockCircleOutlined, HistoryOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ProgrammingComponent from "../components/ProgrammingComponent";
-import { getModuleDetail, getModuleProgress } from "../api/course";
+import { getModuleDetail, getModuleProgress, getQuizHighestScore, getQuizHistory } from "../api/course";
 
 const { Step } = Steps;
 
@@ -17,6 +17,7 @@ export default function ModuleContent() {
   const [activeProgrammingId, setActiveProgrammingId] = useState(null);
   const [moduleInfo, setModuleInfo] = useState(null);
   const [moduleProgress, setModuleProgress] = useState(0);
+  const [quizScores, setQuizScores] = useState({}); // 存储每个quiz的最高成绩
 
   const updateProgress = async () => {
     try {
@@ -33,8 +34,26 @@ export default function ModuleContent() {
         setLoading(true);
         const response = await getModuleDetail(courseId, moduleId);
         const moduleData = response.data.module;
-        setContents(moduleData?.contents || []);
+        const contentsList = moduleData?.contents || [];
+        setContents(contentsList);
         setModuleInfo(moduleData);
+
+        // 获取每个quiz的最高成绩
+        const scores = {};
+        for (const content of contentsList) {
+          if (content.type === 'QUIZ') {
+            try {
+              const scoreResponse = await getQuizHighestScore(courseId, moduleId, content.id);
+              console.log(`获取quiz ${content.id} 成绩成功:`, scoreResponse.data);
+              scores[content.id] = scoreResponse.data.highest_score;
+            } catch (err) {
+              console.error(`获取quiz ${content.id} 成绩失败:`, err);
+              scores[content.id] = 0;
+            }
+          }
+        }
+        console.log('所有quiz成绩:', scores);
+        setQuizScores(scores);
       } catch (err) {
         setError(err.response?.data?.message || '获取内容失败');
       } finally {
@@ -429,49 +448,114 @@ export default function ModuleContent() {
 
                     {content.type === 'QUIZ' && (
                       <div style={{
-                        padding: "32px",
+                        padding: "24px",
                         background: "linear-gradient(135deg, #fef3c7 0%, #fef08a 100%)",
-                        borderRadius: "12px",
-                        textAlign: "center",
+                        borderRadius: "16px",
                         border: "2px dashed #fbbf24",
+                        boxShadow: "0 4px 12px rgba(251, 191, 36, 0.2)",
                       }}>
                         <div style={{
-                          fontSize: "48px",
-                          marginBottom: "16px",
-                          opacity: 0.7,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: "16px",
                         }}>
-                          📝
-                        </div>
-                        <h3 style={{
-                          margin: "0 0 8px 0",
-                          color: "#92400e",
-                          fontWeight: 600,
-                        }}>
-                          知识测验
-                        </h3>
-                        <p style={{
-                          margin: "0 0 24px 0",
-                          color: "#a16207",
-                          fontSize: "14px",
-                        }}>
-                          点击下方按钮开始测验，检验你对本节内容的掌握程度
-                        </p>
-                        <Button
-                          type="primary"
-                          size="large"
-                          onClick={() => navigate(`/course/${courseId}/module/${moduleId}/quiz/${content.id}`)}
-                          icon={<CheckSquareOutlined />}
-                          style={{
-                            borderRadius: "8px",
-                            height: "44px",
-                            fontSize: "16px",
+                          <div style={{
+                            fontSize: "48px",
+                            opacity: 0.8,
+                          }}>
+                            📝
+                          </div>
+                          <h3 style={{
+                            margin: "0",
+                            color: "#92400e",
                             fontWeight: 600,
-                            background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                            border: "none",
-                          }}
-                        >
-                          开始测验
-                        </Button>
+                            fontSize: "20px",
+                          }}>
+                            知识测验
+                          </h3>
+                          <div style={{
+                            padding: "12px 20px",
+                            background: "rgba(255, 255, 255, 0.9)",
+                            borderRadius: "12px",
+                            display: "inline-block",
+                            border: "1px solid #fbbf24",
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                          }}>
+                            <span style={{
+                              color: "#92400e",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                            }}>
+                              历史最高成绩: {quizScores[content.id] || 0} 分
+                            </span>
+                          </div>
+                          <p style={{
+                            margin: "0",
+                            color: "#a16207",
+                            fontSize: "14px",
+                            textAlign: "center",
+                            maxWidth: "400px",
+                          }}>
+                            点击下方按钮开始测验，检验你对本节内容的掌握程度
+                          </p>
+                          <div style={{
+                            display: "flex",
+                            gap: "12px",
+                            marginTop: "8px",
+                          }}>
+                            <Button
+                              type="primary"
+                              size="large"
+                              onClick={() => navigate(`/course/${courseId}/module/${moduleId}/quiz/${content.id}`)}
+                              icon={<CheckSquareOutlined />}
+                              style={{
+                                borderRadius: "12px",
+                                height: "48px",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                                border: "none",
+                                boxShadow: "0 4px 8px rgba(245, 158, 11, 0.3)",
+                                transition: "all 0.3s ease",
+                                '&:hover': {
+                                  transform: "translateY(-2px)",
+                                  boxShadow: "0 6px 12px rgba(245, 158, 11, 0.4)",
+                                },
+                              }}
+                            >
+                              开始测验
+                            </Button>
+                            <Button
+                              size="large"
+                              onClick={() => {
+                                window.scrollTo(0, 0);
+                                navigate(`/course/${courseId}/module/${moduleId}/quiz/${content.id}/history`);
+                              }}
+                              icon={<HistoryOutlined />}
+                              style={{
+                                borderRadius: "12px",
+                                height: "48px",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                background: "white",
+                                border: "2px solid #fbbf24",
+                                color: "#92400e",
+                                boxShadow: "0 4px 8px rgba(251, 191, 36, 0.2)",
+                                transition: "all 0.3s ease",
+                                '&:hover': {
+                                  transform: "translateY(-2px)",
+                                  boxShadow: "0 6px 12px rgba(251, 191, 36, 0.3)",
+                                },
+                              }}
+                              onClick={() => {
+                                navigate(`/course/${courseId}/module/${moduleId}/quiz/${content.id}/history`);
+                              }}
+                            >
+                              查看历史记录
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -569,6 +653,8 @@ export default function ModuleContent() {
           </p>
         </Card>
       )}
+
+
     </div>
   );
 }

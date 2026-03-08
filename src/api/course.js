@@ -62,6 +62,16 @@ export const submitProgramming = (courseId, moduleId, contentId, payload) => {
   return request.put(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming`, payload);
 };
 
+// 获取Quiz历史最高成绩
+export const getQuizHighestScore = (courseId, moduleId, contentId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/quiz/highest`);
+};
+
+// 获取Quiz历史答题记录
+export const getQuizHistory = (courseId, moduleId, contentId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/quiz/history`);
+};
+
 // 获取课程讨论区问题列表
 export const getCourseDiscussions = (courseId) => {
   return request.get(`/courses/${courseId}/discussions`);
