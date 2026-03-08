@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Card, Typography, Table, Spin, Tag, Progress, Space } from "antd";
+import { Card, Typography, Table, Spin, Tag, Progress, Space, message } from "antd";
 import { TrophyOutlined, BookOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import request from '../api/request';
 
 const { Title, Paragraph } = Typography;
 
@@ -9,40 +10,41 @@ export default function GradesPage() {
   const [grades, setGrades] = useState([]);
 
   useEffect(() => {
-    // 模拟获取成绩列表
-    setTimeout(() => {
-      setGrades([
-        {
-          id: 1,
-          course: "C语言编程基础",
-          exam: "C语言基础知识测试",
-          score: 85,
-          grade: "A",
-          date: "2026-03-10",
-          status: "passed"
-        },
-        {
-          id: 2,
-          course: "数据结构与算法",
-          exam: "数据结构与算法测试",
-          score: 78,
-          grade: "B+",
-          date: "2026-03-05",
-          status: "passed"
-        },
-        {
-          id: 3,
-          course: "Python编程基础",
-          exam: "Python基础知识测试",
-          score: 65,
-          grade: "C",
-          date: "2026-03-01",
-          status: "passed"
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
+    fetchGrades();
   }, []);
+
+  const fetchGrades = async () => {
+    try {
+      setLoading(true);
+      console.log('开始获取成绩...');
+      
+      // 使用新的 API 端点获取所有小测的最高成绩
+      console.log('获取所有小测的最高成绩...');
+      const highestScoresResponse = await request.get('/course/quiz/highest-scores');
+      const highestScores = highestScoresResponse.data;
+      console.log('所有小测的最高成绩:', highestScores);
+
+      // 格式化成绩数据
+      const allGrades = highestScores.map(score => ({
+        id: score.id,
+        course: score.course_title,
+        module: score.module_title,
+        quiz: score.quiz_title,
+        highestScore: score.highest_score,
+        totalPoints: score.total_points,
+        date: new Date().toISOString().split('T')[0],
+        status: 'completed'
+      }));
+      
+      console.log('格式化后的成绩记录:', allGrades);
+      setGrades(allGrades);
+    } catch (error) {
+      message.error('获取成绩失败');
+      console.error('获取成绩失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -65,9 +67,9 @@ export default function GradesPage() {
       )
     },
     {
-      title: "考试",
-      dataIndex: "exam",
-      key: "exam",
+      title: "模块",
+      dataIndex: "module",
+      key: "module",
       render: (text) => (
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <FileTextOutlined style={{ color: "#52c41a" }} />
@@ -76,38 +78,29 @@ export default function GradesPage() {
       )
     },
     {
-      title: "成绩",
-      dataIndex: "score",
-      key: "score",
-      render: (score) => (
+      title: "小测",
+      dataIndex: "quiz",
+      key: "quiz"
+    },
+    {
+      title: "最高成绩",
+      dataIndex: "highestScore",
+      key: "highestScore",
+      render: (highestScore, record) => (
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: "18px", fontWeight: "600", color: "#1890ff" }}>
-            {score}
+            {highestScore}/{record.totalPoints}
           </div>
-          <Progress percent={score} size="small" strokeColor="#1890ff" />
+          <Progress 
+            percent={(highestScore / record.totalPoints) * 100} 
+            size="small" 
+            strokeColor="#1890ff" 
+          />
         </div>
       )
     },
     {
-      title: "等级",
-      dataIndex: "grade",
-      key: "grade",
-      render: (grade) => (
-        <Tag
-          color={
-            grade === "A" ? "green" :
-            grade === "B+" ? "blue" :
-            grade === "B" ? "cyan" :
-            grade === "C" ? "orange" : "red"
-          }
-          style={{ borderRadius: "12px", padding: "4px 12px", fontWeight: "500" }}
-        >
-          {grade}
-        </Tag>
-      )
-    },
-    {
-      title: "考试日期",
+      title: "完成日期",
       dataIndex: "date",
       key: "date"
     },
@@ -117,12 +110,12 @@ export default function GradesPage() {
       key: "status",
       render: (status) => (
         <Tag
-          color={status === "passed" ? "green" : "red"}
+          color={status === "completed" ? "green" : "red"}
           style={{ borderRadius: "12px", padding: "4px 12px", fontWeight: "500" }}
         >
           <Space size="small">
-            {status === "passed" ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-            {status === "passed" ? "通过" : "未通过"}
+            <CheckCircleOutlined />
+            已完成
           </Space>
         </Tag>
       )
@@ -147,7 +140,7 @@ export default function GradesPage() {
             成绩中心
           </Title>
           <Paragraph style={{ fontSize: "16px", color: "#666", lineHeight: "1.6" }}>
-            查看您的考试成绩和学习成果，了解您的学习进度和水平。
+            查看您的课程模块小测最高成绩，了解您的学习进度和水平。未参加的测试将不会显示。
           </Paragraph>
         </div>
       </Card>
@@ -162,7 +155,7 @@ export default function GradesPage() {
       >
         <div style={{ padding: "24px" }}>
           <Title level={2} style={{ margin: "0 0 24px 0", color: "#333" }}>
-            我的成绩
+            课程模块小测最高成绩
           </Title>
           
           <Table
