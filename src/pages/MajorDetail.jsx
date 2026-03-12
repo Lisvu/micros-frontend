@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
-import { Card, Button, Typography, Image, Spin, Alert, Row, Col, Progress, Tag, Divider, Breadcrumb, Statistic, Form, Input, Select, List, Avatar, Badge, Modal, message } from "antd";
-import { BookOutlined, PlayCircleOutlined, ClockCircleOutlined, UserOutlined, TrophyOutlined, FireOutlined, ArrowLeftOutlined, CloudOutlined, SunOutlined, StarFilled, HeartOutlined, SmileOutlined, MessageOutlined, SendOutlined, PlusOutlined, CommentOutlined, LikeOutlined, EyeOutlined } from "@ant-design/icons";
-import { getCourseDetail, getCourseProgress, getModuleProgress, getUserCourses, getCourseDiscussions, createDiscussion } from "../api/course";
+import { Card, Button, Typography, Image, Spin, Alert, Row, Col, Progress, Tag, Divider, Breadcrumb, Statistic, message } from "antd";
+import { BookOutlined, PlayCircleOutlined, ClockCircleOutlined, UserOutlined, TrophyOutlined, FireOutlined, ArrowLeftOutlined, CloudOutlined, SunOutlined, StarFilled, HeartOutlined, SmileOutlined, MessageOutlined } from "@ant-design/icons";
+import { getCourseDetail, getCourseProgress, getModuleProgress, getUserCourses } from "../api/course";
 
 // 课程封面图片映射 - 使用与 OnlineLearningPage 相同的图片来源
 const courseCovers = {
@@ -17,7 +17,7 @@ const courseCovers = {
 const defaultCover = "https://picsum.photos/seed/course/800/450";
 
 const { Title, Paragraph, Text } = Typography;
-const { TextArea } = Input;
+
 
 export default function MajorDetail() {
   const { id } = useParams();
@@ -29,10 +29,7 @@ export default function MajorDetail() {
 const [completedModules, setCompletedModules] = useState(0);
 const [moduleProgresses, setModuleProgresses] = useState({}); // 存储每个模块的进度
 const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
-  const [questions, setQuestions] = useState([]); // 讨论区问题列表
-  const [showAskModal, setShowAskModal] = useState(false); // 显示提问模态框
-  const [form] = Form.useForm(); // 提问表单
-  const [loadingQuestions, setLoadingQuestions] = useState(false); // 加载问题列表的状态
+
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
@@ -107,88 +104,7 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
     }
   }, [course, id, isEnrolled]);
 
-  // 获取讨论区问题列表
-  const fetchQuestions = useCallback(async () => {
-    if (!isEnrolled) return;
-    
-    try {
-      setLoadingQuestions(true);
-      // 调用API获取问题列表
-      const response = await getCourseDiscussions(id);
-      const questionsData = response.data.data;
-      
-      // 格式化问题数据
-      const formattedQuestions = questionsData.map(question => ({
-        id: question.id,
-        title: question.title,
-        content: question.content,
-        moduleId: question.module_id,
-        moduleTitle: question.module?.title || "通用问题",
-        author: {
-          id: question.user?.id || 0,
-          name: question.user?.name || "未知用户",
-          avatar: `https://picsum.photos/seed/user${question.user?.id || Math.floor(Math.random() * 10)}/100/100`
-        },
-        createdAt: new Date(question.created_at).toLocaleString(),
-        replies: question.answer ? 1 : 0,
-        likes: question.likes || 0,
-        views: question.views || 0,
-        answer: question.answer,
-        answeredBy: question.answerer?.name || null
-      }));
-      
-      setQuestions(formattedQuestions);
-    } catch (err) {
-      console.error('获取问题列表失败:', err);
-      message.error('获取问题列表失败');
-    } finally {
-      setLoadingQuestions(false);
-    }
-  }, [isEnrolled, id]);
 
-  // 当用户已选课时，获取讨论区问题列表
-  useEffect(() => {
-    if (isEnrolled) {
-      fetchQuestions();
-    }
-  }, [isEnrolled, fetchQuestions]);
-
-  // 处理提问
-  const handleAskQuestion = async (values) => {
-    try {
-      // 调用API提交问题
-      const response = await createDiscussion(id, {
-        title: values.title,
-        content: values.content,
-        module_id: values.moduleId || null
-      });
-      
-      const newQuestion = {
-        id: response.data.data.id,
-        title: response.data.data.title,
-        content: response.data.data.content,
-        moduleId: response.data.data.module_id,
-        moduleTitle: response.data.data.module?.title || "通用问题",
-        author: {
-          id: response.data.data.user?.id || 0,
-          name: response.data.data.user?.name || "当前用户",
-          avatar: `https://picsum.photos/seed/user${response.data.data.user?.id || Math.floor(Math.random() * 10)}/100/100`
-        },
-        createdAt: new Date(response.data.data.created_at).toLocaleString(),
-        replies: 0,
-        likes: 0,
-        views: 0
-      };
-      
-      setQuestions([newQuestion, ...questions]);
-      setShowAskModal(false);
-      form.resetFields();
-      message.success('问题提交成功');
-    } catch (err) {
-      console.error('提交问题失败:', err);
-      message.error('提交问题失败');
-    }
-  };
 
   if (loading) {
     return (
@@ -769,199 +685,79 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
             )}
           </div>
 
-          {/* 讨论区部分 */}
+          {/* 讨论区入口 */}
           <div style={{ marginBottom: "24px" }}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "24px",
-              padding: "16px 20px",
-              background: "white",
-              borderRadius: "16px",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-              border: "2px solid #f0f9ff"
-            }}>
-              <h2 style={{
-                margin: "0",
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "#1890ff",
+            <Card
+              style={{
+                borderRadius: "20px",
+                border: "none",
+                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                overflow: "hidden",
+                position: "relative",
+                background: "white",
+                border: "2px solid #f0f9ff"
+              }}
+            >
+              <div style={{
+                padding: "32px",
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                gap: "12px",
+                justifyContent: "center",
+                textAlign: "center"
               }}>
-                <MessageOutlined style={{ fontSize: "24px" }} />
-                课程讨论区
-                <Tag 
-                  color="purple" 
-                  style={{ 
-                    borderRadius: "16px", 
-                    fontWeight: 500,
-                    padding: "4px 16px",
-                    background: "rgba(139, 92, 246, 0.1)",
-                    border: "1px solid #d3adf7"
-                  }}
-                >
-                  {questions.length} 个问题
-                </Tag>
-              </h2>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setShowAskModal(true)}
-                style={{
-                  borderRadius: "20px",
-                  padding: "8px 24px",
+                <div style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
                   background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-                  border: "none",
-                  boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
-                  fontWeight: "600",
-                  transition: "all 0.3s ease",
-                  '&:hover': {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 6px 16px rgba(139, 92, 246, 0.4)"
-                  }
-                }}
-              >
-                提出问题
-              </Button>
-            </div>
-
-            {loadingQuestions ? (
-              <div style={{ textAlign: "center", padding: "40px" }}>
-                <Spin size="large" tip="加载问题列表..." />
-              </div>
-            ) : questions.length > 0 ? (
-              <List
-                itemLayout="vertical"
-                dataSource={questions}
-                renderItem={(question) => (
-                  <List.Item
-                    style={{
-                      background: "white",
-                      borderRadius: "16px",
-                      marginBottom: "16px",
-                      padding: "20px",
-                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                      border: "2px solid #f0f9ff",
-                      transition: "all 0.3s ease",
-                      '&:hover': {
-                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-                        borderColor: "#d3adf7"
-                      }
-                    }}
-                  >
-                    <List.Item.Meta
-                      avatar={
-                        <Avatar src={question.author.avatar} alt={question.author.name} style={{ 
-                          width: "48px", 
-                          height: "48px",
-                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)"
-                        }} />
-                      }
-                      title={
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <span style={{ 
-                            fontSize: "18px", 
-                            fontWeight: "600", 
-                            color: "#1890ff",
-                            flex: 1
-                          }}>
-                            {question.title}
-                          </span>
-                          {question.moduleId && (
-                            <Tag 
-                              color="blue" 
-                              style={{ 
-                                borderRadius: "12px",
-                                padding: "4px 12px",
-                                fontSize: "12px",
-                                background: "rgba(64, 169, 255, 0.1)",
-                                border: "1px solid #91d5ff"
-                              }}
-                            >
-                              {question.moduleTitle}
-                            </Tag>
-                          )}
-                        </div>
-                      }
-                      description={
-                        <div style={{ marginTop: "8px" }}>
-                          <div style={{ 
-                            fontSize: "14px", 
-                            color: "#666",
-                            marginBottom: "8px",
-                            lineHeight: "1.5"
-                          }}>
-                            {question.content}
-                          </div>
-                          <div style={{ 
-                            display: "flex", 
-                            alignItems: "center", 
-                            gap: "16px",
-                            fontSize: "12px",
-                            color: "#999"
-                          }}>
-                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <UserOutlined style={{ fontSize: "12px" }} />
-                              {question.author.name}
-                            </span>
-                            <span>{question.createdAt}</span>
-                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <EyeOutlined style={{ fontSize: "12px" }} />
-                              {question.views}
-                            </span>
-                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <CommentOutlined style={{ fontSize: "12px" }} />
-                              {question.replies}
-                            </span>
-                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <LikeOutlined style={{ fontSize: "12px" }} />
-                              {question.likes}
-                            </span>
-                          </div>
-                        </div>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            ) : (
-              <Card
-                style={{
-                  borderRadius: "16px",
-                  textAlign: "center",
-                  padding: "60px 20px",
-                  border: "2px dashed #e5e7eb",
-                  background: "#fafbfc",
-                }}
-              >
-                <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.5 }}>
-                  💬
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "20px",
+                  boxShadow: "0 4px 16px rgba(139, 92, 246, 0.3)"
+                }}>
+                  <MessageOutlined style={{ fontSize: "40px", color: "white" }} />
                 </div>
-                <h3 style={{ color: "#6b7280", marginBottom: "8px" }}>
-                  暂无讨论
+                <h3 style={{
+                  margin: "0 0 12px 0",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#1890ff"
+                }}>
+                  课程讨论区
                 </h3>
-                <p style={{ color: "#9ca3af", marginBottom: "24px" }}>
-                  成为第一个提问的人吧！
+                <p style={{
+                  margin: "0 0 24px 0",
+                  fontSize: "16px",
+                  color: "#666",
+                  maxWidth: "400px"
+                }}>
+                  加入课程讨论，与同学交流学习心得，解决学习中遇到的问题
                 </p>
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setShowAskModal(true)}
+                  size="large"
+                  onClick={() => navigate(`/course/${id}/discussion`)}
                   style={{
-                    borderRadius: "20px",
-                    padding: "8px 24px",
+                    borderRadius: "24px",
+                    padding: "12px 32px",
                     background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
                     border: "none",
-                    boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)"
+                    boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
+                    fontWeight: "600",
+                    fontSize: "16px",
+                    transition: "all 0.3s ease",
+                    '&:hover': {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 16px rgba(139, 92, 246, 0.4)"
+                    }
                   }}
                 >
-                  提出第一个问题
+                  进入讨论区
                 </Button>
-              </Card>
-            )}
+              </div>
+            </Card>
           </div>
         </>
       ) : (
@@ -1011,140 +807,7 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
         </Card>
       )}
 
-      {/* 提问模态框 */}
-      <Modal
-        title={
-          <div style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "12px",
-            color: "#1890ff"
-          }}>
-            <MessageOutlined style={{ fontSize: "20px" }} />
-            <span style={{ fontSize: "18px", fontWeight: "600" }}>提出问题</span>
-          </div>
-        }
-        open={showAskModal}
-        onCancel={() => setShowAskModal(false)}
-        footer={null}
-        width={600}
-        style={{
-          borderRadius: "20px",
-          overflow: "hidden"
-        }}
-        bodyStyle={{
-          padding: "24px",
-          background: "linear-gradient(135deg, #f9f0ff 0%, #f0f9ff 100%)"
-        }}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleAskQuestion}
-        >
-          <Form.Item
-            name="title"
-            label="问题标题"
-            rules={[{ required: true, message: "请输入问题标题" }, { min: 5, message: "标题至少5个字符" }]}
-            style={{ marginBottom: "16px" }}
-          >
-            <Input 
-              placeholder="请输入问题标题" 
-              style={{
-                borderRadius: "12px",
-                height: "48px",
-                fontSize: "16px",
-                border: "2px solid #d3adf7",
-                '&:focus': {
-                  borderColor: '#8b5cf6',
-                  boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.2)'
-                }
-              }}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="moduleId"
-            label="选择模块（可选）"
-            style={{ marginBottom: "16px" }}
-          >
-            <Select 
-              placeholder="选择问题对应的模块，不选则为通用问题"
-              style={{
-                borderRadius: "12px",
-                height: "48px",
-                border: "2px solid #d3adf7",
-                '&:focus': {
-                  borderColor: '#8b5cf6'
-                }
-              }}
-              allowClear
-            >
-              {course.modules && course.modules.map(module => (
-                <Select.Option key={module.id} value={module.id}>
-                  {module.title}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          
-          <Form.Item
-            name="content"
-            label="问题内容"
-            rules={[{ required: true, message: "请输入问题内容" }, { min: 10, message: "内容至少10个字符" }]}
-            style={{ marginBottom: "24px" }}
-          >
-            <TextArea 
-              placeholder="请详细描述你的问题..."
-              rows={6}
-              style={{
-                borderRadius: "12px",
-                fontSize: "16px",
-                border: "2px solid #d3adf7",
-                '&:focus': {
-                  borderColor: '#8b5cf6',
-                  boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.2)'
-                }
-              }}
-            />
-          </Form.Item>
-          
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-            <Button
-              onClick={() => setShowAskModal(false)}
-              style={{
-                borderRadius: "20px",
-                padding: "8px 24px",
-                border: "2px solid #d3adf7",
-                color: "#8b5cf6",
-                fontWeight: "500"
-              }}
-            >
-              取消
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={<SendOutlined />}
-              style={{
-                borderRadius: "20px",
-                padding: "8px 32px",
-                background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-                border: "none",
-                boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
-                fontWeight: "600",
-                transition: "all 0.3s ease",
-                '&:hover': {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(139, 92, 246, 0.4)"
-                }
-              }}
-            >
-              提交问题
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+
     </div>
   );
 }

@@ -239,37 +239,37 @@ export default function OnlineLearningPage() {
               type="primary" 
               size="large"
               onClick={() => {
-                document.getElementById('all-courses-section').scrollIntoView({ 
-                  behavior: 'smooth' 
-                });
-              }}
-              icon={<CloudOutlined />}
-              style={{
-                borderRadius: "24px",
-                padding: "12px 24px",
-                background: "linear-gradient(135deg, #40a9ff 0%, #1890ff 100%)",
-                border: "none",
-                boxShadow: "0 4px 12px rgba(64, 169, 255, 0.3)",
-                fontWeight: "600",
-                fontSize: "16px",
-                transition: "all 0.3s ease",
-                '&:hover': {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(64, 169, 255, 0.4)"
-                }
-              }}
-            >
-              发现课程
-            </Button>
-            <Button 
-              type="default" 
-              size="large"
-              onClick={() => {
                 document.getElementById('my-courses-section').scrollIntoView({ 
                   behavior: 'smooth' 
                 });
               }}
               icon={<BookOutlined />}
+              style={{
+                borderRadius: "24px",
+                padding: "12px 24px",
+                background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+                border: "none",
+                boxShadow: "0 4px 12px rgba(82, 196, 26, 0.3)",
+                fontWeight: "600",
+                fontSize: "16px",
+                transition: "all 0.3s ease",
+                '&:hover': {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 16px rgba(82, 196, 26, 0.4)"
+                }
+              }}
+            >
+              我的课程
+            </Button>
+            <Button 
+              type="default" 
+              size="large"
+              onClick={() => {
+                document.getElementById('all-courses-section').scrollIntoView({ 
+                  behavior: 'smooth' 
+                });
+              }}
+              icon={<CloudOutlined />}
               style={{
                 borderRadius: "24px",
                 padding: "12px 24px",
@@ -285,7 +285,7 @@ export default function OnlineLearningPage() {
                 }
               }}
             >
-              我的课程
+              发现课程
             </Button>
           </div>
         </div>
@@ -299,6 +299,198 @@ export default function OnlineLearningPage() {
         }}>
 
   
+
+          {/* 我的课程 */}
+
+          <div id="my-courses-section" style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            marginBottom: 24,
+            padding: "0 16px"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ 
+                width: 40, 
+                height: 40, 
+                borderRadius: "50%", 
+                background: "linear-gradient(135deg, #95de64 0%, #52c41a 100%)",
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center"
+              }}>
+                <MoonOutlined style={{ fontSize: 20, color: "white" }} />
+              </div>
+              <h2 style={{ margin: 0, color: "#52c41a", fontSize: 24, fontWeight: "600" }}>我的课程</h2>
+            </div>
+            <Tag 
+              color="#52c41a" 
+              style={{ 
+                fontSize: 14, 
+                borderRadius: "16px",
+                padding: "4px 16px",
+                background: "rgba(82, 196, 26, 0.1)",
+                border: "1px solid #b7eb8f"
+              }}
+            >
+              {myCourses.length} 门课程
+            </Tag>
+          </div>
+
+          {myCourses.length === 0 ? (
+            <Empty 
+              description="暂未选课" 
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : (
+            <Row gutter={[24, 24]}>
+              {myCourses.map((course) => {
+                const progress = courseProgress[course.id] || 0;
+                const courseInfo = allCourses.find(c => c.id === course.id);
+                
+                return (
+                  <Col xs={24} sm={12} lg={8} key={course.id}>
+                    <Card 
+                      hoverable 
+                      style={{ 
+                        borderRadius: 16, 
+                        overflow: "hidden",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+                        background: "white",
+                        transform: "translateY(0)",
+                        border: "2px solid #f6ffed",
+                        position: "relative"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-5px)";
+                        e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+                        e.currentTarget.style.borderColor = "#b7eb8f";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
+                        e.currentTarget.style.borderColor = "#f6ffed";
+                      }}
+                      cover={
+                        <div style={{ 
+                          height: 160, 
+                          overflow: "hidden",
+                          position: "relative"
+                        }}>
+                          <img 
+                            src={courseInfo?.cover || defaultCover} 
+                            alt={course.title} 
+                            style={{ 
+                              width: "100%", 
+                              height: "100%", 
+                              objectFit: "cover",
+                              transition: "transform 0.5s ease"
+                            }} 
+                            onError={(e) => {
+                              e.target.src = defaultCover;
+                            }}
+                          />
+
+                        </div>
+                      }
+                    >
+                      <div style={{ padding: 16 }}>
+                        <h3 style={{ 
+                          margin: 0, 
+                          fontSize: 18, 
+                          fontWeight: 600, 
+                          color: "#52c41a",
+                          marginBottom: 8,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap"
+                        }}>
+                          {course.title}
+                        </h3>
+                        <p style={{ 
+                          marginBottom: 16, 
+                          color: "#666",
+                          height: 40,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          fontSize: 14
+                        }}>
+                          {course.description}
+                        </p>
+                        <div style={{ marginBottom: 16 }}>
+                          <div style={{ 
+                            marginBottom: 8, 
+                            fontSize: 14, 
+                            color: "#666",
+                            fontWeight: "500"
+                          }}>
+                            学习进度
+                          </div>
+                          <Progress
+                            percent={progress}
+                            size="small"
+                            strokeColor={{
+                              from: '#52c41a',
+                              to: '#95de64',
+                            }}
+                            style={{ borderRadius: 4 }}
+                          />
+                        </div>
+                        <Button
+                          type="primary"
+                          block
+                          icon={<PlayCircleOutlined />}
+                          onClick={() => navigate(`/majors/${course.id}`)}
+                          size="small"
+                          style={{ 
+                            borderRadius: 20, 
+                            padding: "10px 16px",
+                            background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+                            border: "none",
+                            boxShadow: "0 4px 12px rgba(82, 196, 26, 0.3)",
+                            transition: "all 0.3s ease",
+                            fontWeight: "600",
+                            fontSize: "14px"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "linear-gradient(135deg, #389e0d 0%, #237804 100%)";
+                            e.currentTarget.style.boxShadow = "0 6px 16px rgba(82, 196, 26, 0.4)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)";
+                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(82, 196, 26, 0.3)";
+                          }}
+                        >
+                          继续学习
+                        </Button>
+                      </div>
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
+          )}
+
+          <Divider style={{ 
+            margin: "48px 0",
+            borderColor: "#e6f7ff",
+            textAlign: "center"
+          }}>
+            <div style={{ 
+              background: "white", 
+              padding: "0 24px",
+              color: "#1890ff",
+              fontSize: "16px",
+              fontWeight: "500"
+            }}>
+              <CloudOutlined style={{ marginRight: 8 }} />
+              发现课程
+            </div>
+          </Divider>
 
           {/* 全部课程 */}
 
@@ -485,212 +677,6 @@ export default function OnlineLearningPage() {
               })
             )}
           </Row>
-
-          <Divider style={{ 
-            margin: "48px 0",
-            borderColor: "#e6f7ff",
-            textAlign: "center"
-          }}>
-            <div style={{ 
-              background: "white", 
-              padding: "0 24px",
-              color: "#1890ff",
-              fontSize: "16px",
-              fontWeight: "500"
-            }}>
-              <CloudOutlined style={{ marginRight: 8 }} />
-              我的课程
-            </div>
-          </Divider>
-
-          {/* 我的课程 */}
-
-          <div id="my-courses-section" style={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "center", 
-            marginBottom: 24,
-            padding: "0 16px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ 
-                width: 40, 
-                height: 40, 
-                borderRadius: "50%", 
-                background: "linear-gradient(135deg, #95de64 0%, #52c41a 100%)",
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center"
-              }}>
-                <MoonOutlined style={{ fontSize: 20, color: "white" }} />
-              </div>
-              <h2 style={{ margin: 0, color: "#52c41a", fontSize: 24, fontWeight: "600" }}>我的课程</h2>
-            </div>
-            <Tag 
-              color="#52c41a" 
-              style={{ 
-                fontSize: 14, 
-                borderRadius: "16px",
-                padding: "4px 16px",
-                background: "rgba(82, 196, 26, 0.1)",
-                border: "1px solid #b7eb8f"
-              }}
-            >
-              {myCourses.length} 门课程
-            </Tag>
-          </div>
-
-          {myCourses.length === 0 ? (
-            <Empty 
-              description="暂未选课" 
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            >
-              <Button 
-                type="primary"
-                icon={<CloudOutlined />}
-                style={{
-                  borderRadius: "20px",
-                  padding: "8px 24px",
-                  background: "linear-gradient(135deg, #40a9ff 0%, #1890ff 100%)",
-                  border: "none",
-                  boxShadow: "0 4px 12px rgba(64, 169, 255, 0.3)"
-                }}
-              >
-                浏览课程
-              </Button>
-            </Empty>
-          ) : (
-            <Row gutter={[24, 24]}>
-              {myCourses.map((course) => {
-                const progress = courseProgress[course.id] || 0;
-                const courseInfo = allCourses.find(c => c.id === course.id);
-                
-                return (
-                  <Col xs={24} sm={12} lg={8} key={course.id}>
-                    <Card 
-                      hoverable 
-                      style={{ 
-                        borderRadius: 16, 
-                        overflow: "hidden",
-                        transition: "all 0.3s ease",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
-                        background: "white",
-                        transform: "translateY(0)",
-                        border: "2px solid #f6ffed",
-                        position: "relative"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-5px)";
-                        e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
-                        e.currentTarget.style.borderColor = "#b7eb8f";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
-                        e.currentTarget.style.borderColor = "#f6ffed";
-                      }}
-                      cover={
-                        <div style={{ 
-                          height: 160, 
-                          overflow: "hidden",
-                          position: "relative"
-                        }}>
-                          <img 
-                            src={courseInfo?.cover || defaultCover} 
-                            alt={course.title} 
-                            style={{ 
-                              width: "100%", 
-                              height: "100%", 
-                              objectFit: "cover",
-                              transition: "transform 0.5s ease"
-                            }} 
-                            onError={(e) => {
-                              e.target.src = defaultCover;
-                            }}
-                          />
-
-                        </div>
-                      }
-                    >
-                      <div style={{ padding: 16 }}>
-                        <h3 style={{ 
-                          margin: 0, 
-                          fontSize: 18, 
-                          fontWeight: 600, 
-                          color: "#52c41a",
-                          marginBottom: 8,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap"
-                        }}>
-                          {course.title}
-                        </h3>
-                        <p style={{ 
-                          marginBottom: 16, 
-                          color: "#666",
-                          height: 40,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          fontSize: 14
-                        }}>
-                          {course.description}
-                        </p>
-                        <div style={{ marginBottom: 16 }}>
-                          <div style={{ 
-                            marginBottom: 8, 
-                            fontSize: 14, 
-                            color: "#666",
-                            fontWeight: "500"
-                          }}>
-                            学习进度
-                          </div>
-                          <Progress
-                            percent={progress}
-                            size="small"
-                            strokeColor={{
-                              from: '#52c41a',
-                              to: '#95de64',
-                            }}
-                            style={{ borderRadius: 4 }}
-                          />
-                        </div>
-                        <Button
-                          type="primary"
-                          block
-                          icon={<PlayCircleOutlined />}
-                          onClick={() => navigate(`/majors/${course.id}`)}
-                          size="small"
-                          style={{ 
-                            borderRadius: 20, 
-                            padding: "10px 16px",
-                            background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
-                            border: "none",
-                            boxShadow: "0 4px 12px rgba(82, 196, 26, 0.3)",
-                            transition: "all 0.3s ease",
-                            fontWeight: "600",
-                            fontSize: "14px"
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "linear-gradient(135deg, #389e0d 0%, #237804 100%)";
-                            e.currentTarget.style.boxShadow = "0 6px 16px rgba(82, 196, 26, 0.4)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)";
-                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(82, 196, 26, 0.3)";
-                          }}
-                        >
-                          继续学习
-                        </Button>
-                      </div>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
-          )}
 
         </Card>
 

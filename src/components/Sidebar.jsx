@@ -5,7 +5,6 @@ import {
   LogoutOutlined,
   CalendarOutlined,
   TrophyOutlined,
-  SmileOutlined,
   StarFilled,
   HeartOutlined,
 } from "@ant-design/icons";
@@ -94,40 +93,18 @@ export default function Navbar({ onLogout }) {
   return (
     <Header
       style={{
-        background: "linear-gradient(135deg, #e6f7ff 0%, #91d5ff 100%)",
+        background: "#ffffff",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         padding: "16px 40px",
-        borderRadius: "0 0 20px 20px",
+        borderRadius: "0 0 0 0",
         boxShadow: "0 4px 16px rgba(64, 169, 255, 0.2)",
         position: "relative",
         overflow: "hidden"
       }}
     >
-      {/* 装饰元素 */}
-      <div style={{
-        position: "absolute",
-        top: "10px",
-        left: "20px",
-        width: "60px",
-        height: "60px",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #40a9ff 0%, #1890ff 100%)",
-        opacity: 0.3,
-        zIndex: 0
-      }} />
-      <div style={{
-        position: "absolute",
-        bottom: "10px",
-        right: "40px",
-        width: "80px",
-        height: "80px",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #91d5ff 0%, #40a9ff 100%)",
-        opacity: 0.2,
-        zIndex: 0
-      }} />
+
 
       {/* 左侧 Logo */}
       <div
@@ -145,9 +122,18 @@ export default function Navbar({ onLogout }) {
         }}
         onClick={() => navigate("/online-learning")}
       >
-        <StarFilled style={{ color: "#ffd666", fontSize: "28px" }} />
+        <img 
+          src={require('../0.jpg')} 
+          alt="Logo" 
+          style={{
+            width: "60px",
+            height: "60px",
+            borderRadius: "12px",
+            objectFit: "cover",
+            boxShadow: "0 4px 16px rgba(64, 169, 255, 0.4)"
+          }}
+        />
         软件设计与开发微专业平台
-        <SmileOutlined style={{ color: "#40a9ff", fontSize: "20px" }} />
       </div>
 
       {/* 中间菜单 */}
@@ -168,7 +154,7 @@ export default function Navbar({ onLogout }) {
           margin: "0 8px",
           transition: "all 0.3s ease"
         }}
-        menuItemSelectedIcon={<SmileOutlined style={{ color: "#ff6b6b" }} />}
+        
       />
 
       {/* 右侧用户 */}
@@ -184,7 +170,7 @@ export default function Navbar({ onLogout }) {
             display: "flex",
             alignItems: "center",
             gap: 12,
-            background: "rgba(255, 255, 255, 0.8)",
+            background: "rgb(255, 255, 255)",
             padding: "8px 16px",
             borderRadius: "20px",
             boxShadow: "0 2px 8px rgba(64, 169, 255, 0.2)",
@@ -193,7 +179,7 @@ export default function Navbar({ onLogout }) {
             zIndex: 1,
             '&:hover': {
               transform: "translateY(-2px)",
-              boxShadow: "0 4px 12px rgba(64, 169, 255, 0.3)"
+              //boxShadow: "0 4px 12px rgba(255, 255, 255, 0.3)"
             }
           }}
         >
@@ -206,7 +192,7 @@ export default function Navbar({ onLogout }) {
             alignItems: "center",
             justifyContent: "center",
             color: "white",
-            boxShadow: "0 2px 4px rgba(64, 169, 255, 0.3)"
+            //boxShadow: "0 2px 4px rgba(255, 255, 255, 0.3)"
           }}>
             <UserOutlined />
           </div>

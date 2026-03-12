@@ -73,8 +73,8 @@ export const getQuizHistory = (courseId, moduleId, contentId) => {
 };
 
 // 获取课程讨论区问题列表
-export const getCourseDiscussions = (courseId) => {
-  return request.get(`/courses/${courseId}/discussions`);
+export const getCourseDiscussions = (courseId, params = {}) => {
+  return request.get(`/courses/${courseId}/discussions`, { params });
 };
 
 // 提交讨论区问题
@@ -100,4 +100,14 @@ export const deleteDiscussion = (courseId, discussionId) => {
 // 点赞讨论区问题
 export const likeDiscussion = (courseId, discussionId) => {
   return request.post(`/courses/${courseId}/discussions/${discussionId}/like`);
+};
+
+// 获取编程题提交状态和分数
+export const getProgrammingSubmissionStatus = (submissionId) => {
+  return request.get(`/programming/submission/${submissionId}`);
+};
+
+// 获取编程题提交历史记录
+export const getProgrammingHistory = (courseId, moduleId, contentId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming/history`);
 };

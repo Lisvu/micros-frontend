@@ -17,6 +17,7 @@ import Sidebar from "./components/Sidebar";
 import OnlineLearningPage from "./pages/OnlineLearningPage";
 import ExamsPage from "./pages/ExamsPage";
 import GradesPage from "./pages/GradesPage";
+import CourseDiscussionPage from "./pages/CourseDiscussionPage";
 import { getUser } from "./api/auth";
 import "./styles/layout.css";
 
@@ -73,6 +74,7 @@ function App() {
                 <Route path="/course/:courseId/module/:moduleId" element={<ModuleContent />} />
                 <Route path="/course/:courseId/module/:moduleId/quiz/:contentId" element={<QuizPage />} />
                 <Route path="/course/:courseId/module/:moduleId/quiz/:contentId/history" element={<QuizHistoryPage />} />
+                <Route path="/course/:id/discussion" element={<CourseDiscussionPage />} />
                 <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="/exams" element={<ExamsPage />} />
                 <Route path="/grades" element={<GradesPage />} />
