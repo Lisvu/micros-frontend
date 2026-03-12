@@ -121,7 +121,8 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
         submission_id: res.data.submission_id,
         status: res.data.status,
         score: res.data.score,
-        language: res.data.language
+        language: res.data.language,
+        failed_case: res.data.failed_case
       });
       
       message.success('获取判题结果成功');
@@ -165,28 +166,28 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
 
   return (
     <div>
-      <Card title={info.title || '编程题'}>
+      <Card title={info.title || '编程题'} style={{ fontSize: '16px' }}>
         {info.description && (
-          <div style={{ marginBottom: 12 }} dangerouslySetInnerHTML={{ __html: info.description }} />
+          <div style={{ marginBottom: 16, fontSize: '16px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: info.description }} />
         )}
 
         {info.sample_input && (
-          <div style={{ marginBottom: 8 }}>
-            <strong>示例输入:</strong>
-            <pre style={{ background: '#f6f8fa', padding: 8 }}>{info.sample_input}</pre>
+          <div style={{ marginBottom: 12 }}>
+            <strong style={{ fontSize: '16px' }}>示例输入:</strong>
+            <pre style={{ background: '#f6f8fa', padding: 12, fontSize: '16px', lineHeight: '1.5' }}>{info.sample_input}</pre>
           </div>
         )}
 
         {info.sample_output && (
-          <div style={{ marginBottom: 8 }}>
-            <strong>示例输出:</strong>
-            <pre style={{ background: '#f6f8fa', padding: 8 }}>{info.sample_output}</pre>
+          <div style={{ marginBottom: 12 }}>
+            <strong style={{ fontSize: '16px' }}>示例输出:</strong>
+            <pre style={{ background: '#f6f8fa', padding: 12, fontSize: '16px', lineHeight: '1.5' }}>{info.sample_output}</pre>
           </div>
         )}
 
-        <div style={{ marginBottom: 8 }}>
-          <strong>语言:</strong>
-          <span style={{ marginLeft: 8 }}>Python</span>
+        <div style={{ marginBottom: 12 }}>
+          <strong style={{ fontSize: '16px' }}>语言:</strong>
+          <span style={{ marginLeft: 8, fontSize: '16px' }}>Python</span>
         </div>
 
         <div style={{ border: '1px solid #eee', borderRadius: 4, overflow: 'hidden' }}>
@@ -196,7 +197,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
             language={language}
             value={code}
             onChange={(val) => setCode(val || '')}
-            options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: 'on' }}
+            options={{ minimap: { enabled: false }, fontSize: 18, wordWrap: 'on', theme: 'vs-dark' }}
           />
         </div>
 
@@ -221,16 +222,129 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
         </div>
 
         {result && (
-          <div style={{ marginTop: 12 }}>
-            <strong>评测结果:</strong>
-            <div style={{ background: '#f6f8fa', padding: 12, borderRadius: 4, marginTop: 8 }}>
-              <div style={{ marginBottom: 4 }}>状态: <span style={{ color: result.status === 'AC' ? '#52c41a' : result.status === 'WA' ? '#faad14' : '#1890ff' }}>{result.status === 'AC' ? '答案正确' : result.status === 'WA' ? '错误' : '正在判题中'}</span></div>
+          <div style={{ marginTop: 16 }}>
+            <strong style={{ fontSize: '16px' }}>评测结果:</strong>
+            <div style={{ background: '#f6f8fa', padding: 16, borderRadius: 8, marginTop: 8, fontSize: '16px' }}>
+              <div style={{ marginBottom: 8 }}>状态: <span style={{ color: result.status === 'AC' ? '#52c41a' : result.status === 'WA' ? '#faad14' : '#1890ff', fontSize: '16px' }}>{result.status === 'AC' ? '答案正确' : result.status === 'WA' ? '错误' : '正在判题中'}</span></div>
               {result.score !== undefined && (
-                <div style={{ marginBottom: 4 }}>分数: <span style={{ fontWeight: 'bold' }}>{result.score}</span></div>
+                <div style={{ marginBottom: 8 }}>分数: <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{result.score}</span></div>
               )}
-              <div style={{ marginBottom: 4 }}>提交ID: {result.submission_id}</div>
+              <div style={{ marginBottom: 8 }}>提交ID: <span style={{ fontSize: '16px' }}>{result.submission_id}</span></div>
               {result.language && (
-                <div>语言: {result.language}</div>
+                <div style={{ marginBottom: 8 }}>语言: <span style={{ fontSize: '16px' }}>{result.language}</span></div>
+              )}
+              {result.failed_case && (
+                <div style={{
+                  marginTop: 16,
+                  padding: 20,
+                  backgroundColor: '#fff5f5',
+                  borderRadius: 12,
+                  border: '2px solid #fed7d7',
+                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.1)'
+                }}>
+                  <div style={{
+                    marginBottom: 16,
+                    paddingBottom: 12,
+                    borderBottom: '1px solid #fed7d7'
+                  }}>
+                    <h5 style={{ 
+                      margin: 0, 
+                      color: '#c53030',
+                      fontSize: '18px',
+                      fontWeight: 600
+                    }}>
+                      错误测试用例
+                    </h5>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{
+                      display: 'inline-block',
+                      padding: '6px 16px',
+                      backgroundColor: '#fee2e2',
+                      borderRadius: '20px',
+                      fontSize: '16px',
+                      color: '#b91c1c',
+                      fontWeight: 500
+                    }}>
+                      测试用例 ID: {result.failed_case.id}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{
+                      marginBottom: 8,
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: '#1f2937'
+                    }}>
+                      输入
+                    </div>
+                    <div style={{
+                      backgroundColor: '#1e1e1e',
+                      padding: 16,
+                      borderRadius: 8,
+                      border: '1px solid #333',
+                      fontFamily: 'monospace',
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all',
+                      lineHeight: '1.5',
+                      color: '#d4d4d4'
+                    }}>
+                      {result.failed_case.input}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{
+                      marginBottom: 8,
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: '#1f2937'
+                    }}>
+                      预期输出
+                    </div>
+                    <div style={{
+                      backgroundColor: '#1e1e1e',
+                      padding: 16,
+                      borderRadius: 8,
+                      border: '1px solid #333',
+                      fontFamily: 'monospace',
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all',
+                      lineHeight: '1.5',
+                      color: '#98d982'
+                    }}>
+                      {result.failed_case.expected_output}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{
+                      marginBottom: 8,
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: '#1f2937'
+                    }}>
+                      实际输出
+                    </div>
+                    <div style={{
+                      backgroundColor: '#1e1e1e',
+                      padding: 16,
+                      borderRadius: 8,
+                      border: '1px solid #333',
+                      fontFamily: 'monospace',
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all',
+                      lineHeight: '1.5',
+                      color: '#f87171'
+                    }}>
+                      {result.failed_case.actual_output || '无输出'}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -288,10 +402,123 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
                   }
                   description={
                     <div>
-                      <div style={{ marginBottom: 8, fontSize: '12px', color: '#999' }}>
+                      <div style={{ marginBottom: 8, fontSize: '14px', color: '#6b7280' }}>
                         提交时间: {new Date(item.created_at).toLocaleString()}
                       </div>
-                      <div style={{ padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4, fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto' }}>
+                      {item.failed_case && (
+                        <div style={{
+                          marginTop: 16,
+                          padding: 16,
+                          backgroundColor: '#fff5f5',
+                          borderRadius: 10,
+                          border: '2px solid #fed7d7',
+                          boxShadow: '0 2px 6px rgba(220, 38, 38, 0.1)'
+                        }}>
+                          <div style={{
+                            marginBottom: 12,
+                            paddingBottom: 8,
+                            borderBottom: '1px solid #fed7d7'
+                          }}>
+                            <h5 style={{ 
+                              margin: 0, 
+                              color: '#c53030',
+                              fontSize: '16px',
+                              fontWeight: 600
+                            }}>
+                              错误测试用例
+                            </h5>
+                          </div>
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{
+                              display: 'inline-block',
+                              padding: '4px 12px',
+                              backgroundColor: '#fee2e2',
+                              borderRadius: '16px',
+                              fontSize: '14px',
+                              color: '#b91c1c',
+                              fontWeight: 500
+                            }}>
+                              测试用例 ID: {item.failed_case.id}
+                            </div>
+                          </div>
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{
+                              marginBottom: 6,
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: '#1f2937'
+                            }}>
+                              输入
+                            </div>
+                            <div style={{
+                              backgroundColor: '#1e1e1e',
+                              padding: 12,
+                              borderRadius: 6,
+                              border: '1px solid #333',
+                              fontFamily: 'monospace',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-all',
+                              lineHeight: '1.4',
+                              color: '#d4d4d4'
+                            }}>
+                              {item.failed_case.input}
+                            </div>
+                          </div>
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{
+                              marginBottom: 6,
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: '#1f2937'
+                            }}>
+                              预期输出
+                            </div>
+                            <div style={{
+                              backgroundColor: '#1e1e1e',
+                              padding: 12,
+                              borderRadius: 6,
+                              border: '1px solid #333',
+                              fontFamily: 'monospace',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-all',
+                              lineHeight: '1.4',
+                              color: '#98d982'
+                            }}>
+                              {item.failed_case.expected_output}
+                            </div>
+                          </div>
+                          <div style={{ marginBottom: 6 }}>
+                            <div style={{
+                              marginBottom: 6,
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: '#1f2937'
+                            }}>
+                              实际输出
+                            </div>
+                            <div style={{
+                              backgroundColor: '#1e1e1e',
+                              padding: 12,
+                              borderRadius: 6,
+                              border: '1px solid #333',
+                              fontFamily: 'monospace',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-all',
+                              lineHeight: '1.4',
+                              color: '#f87171'
+                            }}>
+                              {item.failed_case.actual_output || '无输出'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div style={{ padding: 12, backgroundColor: '#1e1e1e', borderRadius: 6, fontFamily: 'monospace', fontSize: '16px', whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto', color: '#d4d4d4', border: '1px solid #333' }}>
                         {item.code}
                       </div>
                     </div>
