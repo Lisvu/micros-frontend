@@ -219,22 +219,19 @@ export default function Login({ onLoginSuccess }) {
           color: "#1890ff",
           textShadow: "2px 2px 4px rgba(64, 169, 255, 0.2)"
         }}>
-          <div style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #40a9ff 0%, #1890ff 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            boxShadow: "0 4px 12px rgba(64, 169, 255, 0.3)"
-          }}>
-            <LoginOutlined style={{ fontSize: "20px" }} />
-          </div>
+          <img 
+          src={require('../0.jpg')} 
+          alt="Logo" 
+          style={{
+            width: "60px",
+            height: "60px",
+            borderRadius: "12px",
+            objectFit: "cover",
+            //boxShadow: "0 4px 16px rgba(64, 169, 255, 0.4)"
+          }}
+        />
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             软件设计与开发微专业平台
-            <SmileOutlined style={{ color: "#40a9ff" }} />
           </div>
         </Title>}
         style={{

@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
-import { Card, Button, Spin, Alert, message, Modal, List, Badge } from "antd";
+import { useNavigate } from "react-router-dom";
+import { Card, Button, Spin, Alert, message, Badge } from "antd";
 import Editor from '@monaco-editor/react';
-import { getProgrammingInfo, submitProgramming, getProgrammingSubmissionStatus, getProgrammingHistory } from "../api/course";
+import { getProgrammingInfo, submitProgramming, getProgrammingSubmissionStatus } from "../api/course";
 
 export default function ProgrammingComponent({ courseId, moduleId, contentId, onProgressUpdate }) {
+  const navigate = useNavigate();
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [code, setCode] = useState('');
   const language = 'python';
   const [result, setResult] = useState(null);
-  const [historyVisible, setHistoryVisible] = useState(false);
-  const [historyData, setHistoryData] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
 
   const fetchInfo = async (updateLanguageAndCode = true) => {
     try {
@@ -133,24 +132,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
     }
   };
 
-  // 获取编程题提交历史
-  const fetchProgrammingHistory = async () => {
-    try {
-      setHistoryLoading(true);
-      const res = await getProgrammingHistory(courseId, moduleId, contentId);
-      if (res.data.error) {
-        message.error(res.data.error);
-        return;
-      }
-      setHistoryData(res.data.history || []);
-      setHistoryVisible(true);
-    } catch (err) {
-      console.error('获取编程题提交历史错误:', err);
-      message.error('获取提交历史失败');
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -174,14 +156,14 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
         {info.sample_input && (
           <div style={{ marginBottom: 12 }}>
             <strong style={{ fontSize: '16px' }}>示例输入:</strong>
-            <pre style={{ background: '#f6f8fa', padding: 12, fontSize: '16px', lineHeight: '1.5' }}>{info.sample_input}</pre>
+            <pre style={{ background: '#1e1e1e', padding: 12, fontSize: '16px', lineHeight: '1.5', color: '#d4d4d4', borderRadius: 8, border: '1px solid #333' }}>{info.sample_input}</pre>
           </div>
         )}
 
         {info.sample_output && (
           <div style={{ marginBottom: 12 }}>
             <strong style={{ fontSize: '16px' }}>示例输出:</strong>
-            <pre style={{ background: '#f6f8fa', padding: 12, fontSize: '16px', lineHeight: '1.5' }}>{info.sample_output}</pre>
+            <pre style={{ background: '#1e1e1e', padding: 12, fontSize: '16px', lineHeight: '1.5', color: '#d4d4d4', borderRadius: 8, border: '1px solid #333' }}>{info.sample_output}</pre>
           </div>
         )}
 
@@ -190,7 +172,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
           <span style={{ marginLeft: 8, fontSize: '16px' }}>Python</span>
         </div>
 
-        <div style={{ border: '1px solid #eee', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ border: '1px solid #333', borderRadius: 4, overflow: 'hidden', backgroundColor: '#1e1e1e' }}>
           <Editor
             height="360px"
             defaultLanguage={language}
@@ -216,7 +198,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
               }
             }
           }}>恢复模板</Button>
-          <Button onClick={fetchProgrammingHistory}>
+          <Button onClick={() => navigate(`/programming/history/${courseId}/${moduleId}/${contentId}`)}>
             查看历史提交
           </Button>
         </div>
@@ -364,175 +346,7 @@ export default function ProgrammingComponent({ courseId, moduleId, contentId, on
         )}
       </Card>
       
-      {/* 历史提交记录模态框 */}
-      <Modal
-        title="编程题提交历史"
-        open={historyVisible}
-        onCancel={() => setHistoryVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setHistoryVisible(false)}>
-            关闭
-          </Button>
-        ]}
-        width={800}
-      >
-        {historyLoading ? (
-          <div style={{ textAlign: 'center', padding: 20 }}>
-            <Spin />
-          </div>
-        ) : historyData.length > 0 ? (
-          <List
-            dataSource={historyData}
-            locale={{ emptyText: '暂无提交记录' }}
-            renderItem={(item, index) => (
-              <List.Item>
-                <List.Item.Meta
-                  title={
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>提交 #{historyData.length - index}</span>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Badge 
-                          status={item.status === 'AC' ? 'success' : item.status === 'WA' ? 'warning' : 'processing'} 
-                          text={item.status === 'AC' ? '答案正确' : item.status === 'WA' ? '错误' : '正在判题中'}
-                        />
-                        <span style={{ marginLeft: 16, fontSize: '14px', color: '#666' }}>分数: {item.score}</span>
-                        <span style={{ marginLeft: 16, fontSize: '14px', color: '#666' }}>语言: {item.language}</span>
-                      </div>
-                    </div>
-                  }
-                  description={
-                    <div>
-                      <div style={{ marginBottom: 8, fontSize: '14px', color: '#6b7280' }}>
-                        提交时间: {new Date(item.created_at).toLocaleString()}
-                      </div>
-                      {item.failed_case && (
-                        <div style={{
-                          marginTop: 16,
-                          padding: 16,
-                          backgroundColor: '#fff5f5',
-                          borderRadius: 10,
-                          border: '2px solid #fed7d7',
-                          boxShadow: '0 2px 6px rgba(220, 38, 38, 0.1)'
-                        }}>
-                          <div style={{
-                            marginBottom: 12,
-                            paddingBottom: 8,
-                            borderBottom: '1px solid #fed7d7'
-                          }}>
-                            <h5 style={{ 
-                              margin: 0, 
-                              color: '#c53030',
-                              fontSize: '16px',
-                              fontWeight: 600
-                            }}>
-                              错误测试用例
-                            </h5>
-                          </div>
-                          <div style={{ marginBottom: 12 }}>
-                            <div style={{
-                              display: 'inline-block',
-                              padding: '4px 12px',
-                              backgroundColor: '#fee2e2',
-                              borderRadius: '16px',
-                              fontSize: '14px',
-                              color: '#b91c1c',
-                              fontWeight: 500
-                            }}>
-                              测试用例 ID: {item.failed_case.id}
-                            </div>
-                          </div>
-                          <div style={{ marginBottom: 12 }}>
-                            <div style={{
-                              marginBottom: 6,
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              color: '#1f2937'
-                            }}>
-                              输入
-                            </div>
-                            <div style={{
-                              backgroundColor: '#1e1e1e',
-                              padding: 12,
-                              borderRadius: 6,
-                              border: '1px solid #333',
-                              fontFamily: 'monospace',
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-all',
-                              lineHeight: '1.4',
-                              color: '#d4d4d4'
-                            }}>
-                              {item.failed_case.input}
-                            </div>
-                          </div>
-                          <div style={{ marginBottom: 12 }}>
-                            <div style={{
-                              marginBottom: 6,
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              color: '#1f2937'
-                            }}>
-                              预期输出
-                            </div>
-                            <div style={{
-                              backgroundColor: '#1e1e1e',
-                              padding: 12,
-                              borderRadius: 6,
-                              border: '1px solid #333',
-                              fontFamily: 'monospace',
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-all',
-                              lineHeight: '1.4',
-                              color: '#98d982'
-                            }}>
-                              {item.failed_case.expected_output}
-                            </div>
-                          </div>
-                          <div style={{ marginBottom: 6 }}>
-                            <div style={{
-                              marginBottom: 6,
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              color: '#1f2937'
-                            }}>
-                              实际输出
-                            </div>
-                            <div style={{
-                              backgroundColor: '#1e1e1e',
-                              padding: 12,
-                              borderRadius: 6,
-                              border: '1px solid #333',
-                              fontFamily: 'monospace',
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-all',
-                              lineHeight: '1.4',
-                              color: '#f87171'
-                            }}>
-                              {item.failed_case.actual_output || '无输出'}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div style={{ padding: 12, backgroundColor: '#1e1e1e', borderRadius: 6, fontFamily: 'monospace', fontSize: '16px', whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto', color: '#d4d4d4', border: '1px solid #333' }}>
-                        {item.code}
-                      </div>
-                    </div>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        ) : (
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            暂无提交记录
-          </div>
-        )}
-      </Modal>
+
     </div>
   );
 }

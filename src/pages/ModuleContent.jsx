@@ -4,7 +4,7 @@ import { Card, Button, Spin, Alert, Row, Col, Progress, Tag, Divider, Steps, Bre
 import { ArrowLeftOutlined, PlayCircleOutlined, FileTextOutlined, BugOutlined, CheckSquareOutlined, CheckCircleOutlined, ClockCircleOutlined, HistoryOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ProgrammingComponent from "../components/ProgrammingComponent";
-import { getModuleDetail, getModuleProgress, getQuizHighestScore, getQuizHistory } from "../api/course";
+import { getModuleDetail, getModuleProgress, getQuizHighestScore, getQuizHistory, getProgrammingHighestScore, getModuleTotalScore } from "../api/course";
 
 const { Step } = Steps;
 
@@ -18,6 +18,8 @@ export default function ModuleContent() {
   const [moduleInfo, setModuleInfo] = useState(null);
   const [moduleProgress, setModuleProgress] = useState(0);
   const [quizScores, setQuizScores] = useState({}); // 存储每个quiz的最高成绩
+  const [programmingHighestScores, setProgrammingHighestScores] = useState({}); // 存储每个编程题的最高成绩
+  const [moduleTotalScore, setModuleTotalScore] = useState(0); // 存储模块总分
 
   const updateProgress = async () => {
     try {
@@ -38,8 +40,9 @@ export default function ModuleContent() {
         setContents(contentsList);
         setModuleInfo(moduleData);
 
-        // 获取每个quiz的最高成绩
+        // 获取每个quiz的最高成绩和每个编程题的最高成绩
         const scores = {};
+        const programmingHighestScores = {};
         for (const content of contentsList) {
           if (content.type === 'QUIZ') {
             try {
@@ -50,10 +53,21 @@ export default function ModuleContent() {
               console.error(`获取quiz ${content.id} 成绩失败:`, err);
               scores[content.id] = 0;
             }
+          } else if (content.type === 'PROGRAMMING') {
+            try {
+              const highestScoreResponse = await getProgrammingHighestScore(courseId, moduleId, content.id);
+              console.log(`获取编程题 ${content.id} 最高成绩成功:`, highestScoreResponse.data);
+              programmingHighestScores[content.id] = highestScoreResponse.data.highest_score;
+            } catch (err) {
+              console.error(`获取编程题 ${content.id} 最高成绩失败:`, err);
+              programmingHighestScores[content.id] = 0;
+            }
           }
         }
         console.log('所有quiz成绩:', scores);
+        console.log('所有编程题最高成绩:', programmingHighestScores);
         setQuizScores(scores);
+        setProgrammingHighestScores(programmingHighestScores);
       } catch (err) {
         setError(err.response?.data?.message || '获取内容失败');
       } finally {
@@ -70,9 +84,21 @@ export default function ModuleContent() {
       }
     };
 
+    const fetchModuleTotalScore = async () => {
+      try {
+        const response = await getModuleTotalScore(courseId, moduleId);
+        console.log('获取模块总分成功:', response.data);
+        setModuleTotalScore(response.data.total_score);
+      } catch (err) {
+        console.error('获取模块总分失败:', err);
+        setModuleTotalScore(0);
+      }
+    };
+
     if (courseId && moduleId) {
       fetchContents();
       fetchModuleProgress();
+      fetchModuleTotalScore();
     }
   }, [courseId, moduleId]);
 
@@ -238,6 +264,18 @@ export default function ModuleContent() {
                   {moduleProgress}%
                 </div>
                 <div style={{ fontSize: "12px", opacity: 0.8 }}>完成进度</div>
+              </div>
+              <div style={{
+                textAlign: "center",
+                padding: "16px",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "12px",
+                backdropFilter: "blur(10px)",
+              }}>
+                <div style={{ fontSize: "24px", fontWeight: 700, marginBottom: "4px" }}>
+                  {moduleTotalScore}
+                </div>
+                <div style={{ fontSize: "12px", opacity: 0.8 }}>模块总分</div>
               </div>
             </div>
           </Col>
@@ -591,12 +629,29 @@ export default function ModuleContent() {
                               编程练习
                             </h3>
                             <p style={{
-                              margin: "0 0 24px 0",
+                              margin: "0 0 16px 0",
                               color: "#b91c1c",
                               fontSize: "14px",
                             }}>
                               点击下方按钮开始编程练习，提升你的动手能力
                             </p>
+                            <div style={{
+                              marginBottom: "24px",
+                              padding: "12px",
+                              background: "rgba(255, 255, 255, 0.8)",
+                              borderRadius: "8px",
+                              border: "1px solid #fca5a5",
+                            }}>
+                              <div style={{ marginBottom: "4px" }}>
+                                <span style={{ fontWeight: "600" }}>历史最高成绩:</span>
+                                <span style={{
+                                  marginLeft: "8px",
+                                  color: programmingHighestScores[content.id] > 0 ? '#52c41a' : '#6b7280'
+                                }}>
+                                  {programmingHighestScores[content.id] || 0}
+                                </span>
+                              </div>
+                            </div>
                             <Button
                               type="primary"
                               size="large"

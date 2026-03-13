@@ -111,3 +111,23 @@ export const getProgrammingSubmissionStatus = (submissionId) => {
 export const getProgrammingHistory = (courseId, moduleId, contentId) => {
   return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming/history`);
 };
+
+// 获取编程题历史最高成绩
+export const getProgrammingHighestScore = (courseId, moduleId, contentId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/content/${contentId}/programming/highest`);
+};
+
+// 获取模块总分
+export const getModuleTotalScore = (courseId, moduleId) => {
+  return request.get(`/course/${courseId}/module/${moduleId}/total-score`);
+};
+
+// 获取课程总分
+export const getCourseScores = () => {
+  return request.get('/course/scores');
+};
+
+// 获取课程模块分数
+export const getModuleScores = (courseId) => {
+  return request.get(`/course/${courseId}/module/scores`);
+};

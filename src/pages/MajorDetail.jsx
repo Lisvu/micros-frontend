@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { Card, Button, Typography, Image, Spin, Alert, Row, Col, Progress, Tag, Divider, Breadcrumb, Statistic, message } from "antd";
 import { BookOutlined, PlayCircleOutlined, ClockCircleOutlined, UserOutlined, TrophyOutlined, FireOutlined, ArrowLeftOutlined, CloudOutlined, SunOutlined, StarFilled, HeartOutlined, SmileOutlined, MessageOutlined } from "@ant-design/icons";
-import { getCourseDetail, getCourseProgress, getModuleProgress, getUserCourses } from "../api/course";
+import { getCourseDetail, getCourseProgress, getModuleProgress, getUserCourses, getModuleTotalScore } from "../api/course";
 
 // 课程封面图片映射 - 使用与 OnlineLearningPage 相同的图片来源
 const courseCovers = {
@@ -28,7 +28,9 @@ export default function MajorDetail() {
   const [progress, setProgress] = useState(0);
 const [completedModules, setCompletedModules] = useState(0);
 const [moduleProgresses, setModuleProgresses] = useState({}); // 存储每个模块的进度
-const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
+  const [moduleScores, setModuleScores] = useState({}); // 存储每个模块的总分
+  const [courseTotalScore, setCourseTotalScore] = useState(0); // 存储课程总分
+  const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
 
 
   useEffect(() => {
@@ -81,26 +83,48 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
     }
   }, [id]);
 
-  // 当课程数据加载完成后，获取每个模块的进度（仅当已选课时）
+  // 当课程数据加载完成后，获取每个模块的进度和分数（仅当已选课时）
   useEffect(() => {
     if (isEnrolled && course && course.modules) {
-      const fetchModuleProgresses = async () => {
+      const fetchModuleData = async () => {
         try {
           const progresses = {};
+          const scores = {};
           for (const module of course.modules) {
             try {
-              const response = await getModuleProgress(id, module.id);
-              progresses[module.id] = response.data.progress;
+              // 获取模块进度
+              const progressResponse = await getModuleProgress(id, module.id);
+              progresses[module.id] = progressResponse.data.progress;
+              
+              // 获取模块总分
+              const scoreResponse = await getModuleTotalScore(id, module.id);
+              scores[module.id] = scoreResponse.data.total_score;
             } catch (err) {
               progresses[module.id] = 0;
+              scores[module.id] = 0;
             }
           }
           setModuleProgresses(progresses);
+          setModuleScores(scores);
+          
+          // 计算课程总分
+          const moduleCount = course.modules.length;
+          if (moduleCount > 0) {
+            const moduleWeight = 1 / moduleCount;
+            let totalScore = 0;
+            for (const moduleId in scores) {
+              totalScore += scores[moduleId] * moduleWeight;
+            }
+            setCourseTotalScore(parseFloat(totalScore.toFixed(2)));
+          } else {
+            setCourseTotalScore(0);
+          }
         } catch (err) {
-          console.error('获取模块进度失败:', err);
+          console.error('获取模块数据失败:', err);
+          setCourseTotalScore(0);
         }
       };
-      fetchModuleProgresses();
+      fetchModuleData();
     }
   }, [course, id, isEnrolled]);
 
@@ -415,7 +439,7 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
                   </Col>
                 )}
                 
-                <Col xs={12} sm={isEnrolled ? 6 : 12}>
+                <Col xs={12} sm={6}>
                   <div style={{
                     textAlign: "center",
                     padding: "20px",
@@ -440,6 +464,33 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
                     <div style={{ fontSize: "14px", color: "#666", fontWeight: "500" }}>难度等级</div>
                   </div>
                 </Col>
+                {isEnrolled && (
+                  <Col xs={12} sm={6}>
+                    <div style={{
+                      textAlign: "center",
+                      padding: "20px",
+                      background: "linear-gradient(135deg, #fff7e6 0%, #ffd591 100%)",
+                      borderRadius: "16px",
+                      border: "2px solid #ffd591",
+                      boxShadow: "0 4px 12px rgba(255, 193, 7, 0.1)",
+                      transition: "all 0.3s ease",
+                      '&:hover': {
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 8px 20px rgba(255, 193, 7, 0.2)"
+                      }
+                    }}>
+                      <div style={{
+                        fontSize: "28px",
+                        fontWeight: 700,
+                        color: "#fa8c16",
+                        marginBottom: "8px",
+                      }}>
+                        {courseTotalScore}
+                      </div>
+                      <div style={{ fontSize: "14px", color: "#666", fontWeight: "500" }}>课程总分</div>
+                    </div>
+                  </Col>
+                )}
               </Row>
 
               {/* 学习进度条 - 仅当已选课时显示 */}
@@ -519,8 +570,9 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
             {course.modules && course.modules.length > 0 ? (
               <Row gutter={[24, 24]}>
                 {course.modules.map((module, index) => {
-                  // 获取当前模块的进度
+                  // 获取当前模块的进度和分数
                   const moduleProgress = moduleProgresses[module.id] || 0;
+                  const moduleScore = moduleScores[module.id] || 0;
                   
                   // 模块进度判断逻辑：
                   // - 进度为100%：已完成
@@ -634,17 +686,32 @@ const [isEnrolled, setIsEnrolled] = useState(false); // 用户是否已选课
                               <ClockCircleOutlined style={{ color: "#999" }} />
                               <span>预计 30 分钟</span>
                             </div>
-                            <Tag
-                              color={isCompleted ? "success" : isCurrent ? "processing" : "default"}
-                              size="small"
-                              style={{ 
-                                borderRadius: "16px",
-                                padding: "4px 12px",
-                                fontWeight: "500"
-                              }}
-                            >
-                              {isCompleted ? "已完成" : isCurrent ? "进行中" : "未开始"}
-                            </Tag>
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                              <Tag
+                                color="gold"
+                                size="small"
+                                style={{ 
+                                  borderRadius: "16px",
+                                  padding: "4px 12px",
+                                  fontWeight: "500",
+                                  background: "rgba(255, 215, 0, 0.1)",
+                                  border: "1px solid #ffd700"
+                                }}
+                              >
+                                课程分数：{moduleScore}
+                              </Tag>
+                              <Tag
+                                color={isCompleted ? "success" : isCurrent ? "processing" : "default"}
+                                size="small"
+                                style={{ 
+                                  borderRadius: "16px",
+                                  padding: "4px 12px",
+                                  fontWeight: "500"
+                                }}
+                              >
+                                {isCompleted ? "已完成" : isCurrent ? "进行中" : "未开始"}
+                              </Tag>
+                            </div>
                           </div>
                           
                           {/* 模块进度条 */}
