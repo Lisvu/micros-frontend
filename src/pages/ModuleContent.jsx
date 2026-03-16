@@ -404,7 +404,7 @@ export default function ModuleContent() {
                         </div>
                       </div>
 
-                      {content.description && (
+                      {content.description && content.type !== 'PROGRAMMING' && (
                         <p style={{
                           margin: "0 0 12px 52px",
                           fontSize: "14px",

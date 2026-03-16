@@ -30,24 +30,44 @@ export default function GradesPage() {
   }, []);
 
   const fetchCourseScores = async () => {
+    console.log('fetchCourseScores 函数开始执行');
     try {
       setLoading(true);
+      console.log('设置 loading 为 true');
       console.log('开始获取课程成绩...');
       
       // 使用新的 API 端点获取用户课程成绩
+      console.log('开始发送 API 请求到 /course/scores');
       const courseScoresResponse = await request.get('/course/scores');
+      console.log('API 请求成功，响应数据:', courseScoresResponse);
+      
       const courseScores = courseScoresResponse.data;
       console.log('课程成绩:', courseScores);
+      console.log('课程成绩类型:', typeof courseScores);
+      console.log('课程成绩是否为数组:', Array.isArray(courseScores));
 
-      setCourseScores(courseScores);
+      // 确保 courseScores 是一个数组
+      let finalCourseScores = [];
+      if (Array.isArray(courseScores)) {
+        finalCourseScores = courseScores;
+      } else if (typeof courseScores === 'object' && courseScores !== null) {
+        // 将对象转换为数组
+        finalCourseScores = Object.values(courseScores);
+      }
+      console.log('最终课程成绩:', finalCourseScores);
+      setCourseScores(finalCourseScores);
     } catch (error) {
+      console.log('进入错误处理');
       message.error('获取课程成绩失败');
       console.error('获取课程成绩失败:', error);
       console.error('错误状态:', error.response?.status);
       console.error('错误数据:', error.response?.data);
       console.error('错误消息:', error.message);
+      setCourseScores([]);
     } finally {
+      console.log('进入 finally 块');
       setLoading(false);
+      console.log('设置 loading 为 false');
     }
   };
   
@@ -61,7 +81,8 @@ export default function GradesPage() {
       const moduleScores = moduleScoresResponse.data;
       console.log('模块成绩:', moduleScores);
 
-      setModuleScores(moduleScores);
+      // 确保 moduleScores 是一个数组
+      setModuleScores(Array.isArray(moduleScores) ? moduleScores : []);
     } catch (error) {
       message.error('获取模块成绩失败');
       console.error('获取模块成绩失败:', error);
@@ -69,6 +90,7 @@ export default function GradesPage() {
       console.error('错误数据:', error.response?.data);
       console.error('错误消息:', error.message);
       console.error('获取模块成绩失败:', error);
+      setModuleScores([]);
     } finally {
       setLoading(false);
     }
@@ -122,36 +144,92 @@ export default function GradesPage() {
       )
     },
     {
-      title: "课程总分",
-      dataIndex: "total_score",
-      key: "total_score",
-      render: (total_score) => {
-        const score = parseFloat(total_score);
+      title: "课程成绩",
+      dataIndex: "course_score",
+      key: "course_score",
+      width: 120,
+      align: "left",
+      render: (course_score) => {
+        const score = parseFloat(course_score);
         let scoreColor = colors.primary;
         if (score >= 90) scoreColor = colors.success;
         else if (score >= 70) scoreColor = colors.accent;
         else if (score >= 60) scoreColor = colors.warning;
         
         return (
-          <div style={{ textAlign: "center" }}>
+          <div style={{ 
+            textAlign: "left",
+            padding: "8px 0"
+          }}>
+            <div style={{ 
+              fontSize: "16px", 
+              fontWeight: "600", 
+              color: scoreColor
+            }}>
+              {score} (50%)
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      title: "考试成绩",
+      dataIndex: "exam_score",
+      key: "exam_score",
+      width: 120,
+      align: "left",
+      render: (exam_score) => {
+        const score = parseFloat(exam_score);
+        let scoreColor = colors.primary;
+        if (score >= 90) scoreColor = colors.success;
+        else if (score >= 70) scoreColor = colors.accent;
+        else if (score >= 60) scoreColor = colors.warning;
+        
+        return (
+          <div style={{ 
+            textAlign: "left",
+            padding: "8px 0"
+          }}>
+            <div style={{ 
+              fontSize: "16px", 
+              fontWeight: "600", 
+              color: scoreColor
+            }}>
+              {score} (50%)
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      title: "最终成绩",
+      dataIndex: "final_score",
+      key: "final_score",
+      width: 150,
+      align: "left",
+      render: (final_score) => {
+        const score = parseFloat(final_score);
+        let scoreColor = colors.primary;
+        if (score >= 90) scoreColor = colors.success;
+        else if (score >= 70) scoreColor = colors.accent;
+        else if (score >= 60) scoreColor = colors.warning;
+        
+        return (
+          <div style={{ 
+            textAlign: "left",
+            padding: "8px 0"
+          }}>
             <div style={{ 
               fontSize: "20px", 
               fontWeight: "700", 
               color: scoreColor,
-              display: "flex",
-              justifyContent: "center",
+              display: "inline-flex",
               alignItems: "center",
               gap: "8px"
             }}>
               {score}
               {score >= 90 && <TrophyOutlined style={{ fontSize: "18px" }} />}
             </div>
-            <Progress 
-              percent={(score / 100) * 100} 
-              size="small" 
-              strokeColor={scoreColor} 
-              style={{ marginTop: "8px" }}
-            />
           </div>
         );
       }
@@ -220,6 +298,8 @@ export default function GradesPage() {
       title: "模块最高成绩",
       dataIndex: "highest_score",
       key: "highest_score",
+      width: 150,
+      align: "left",
       render: (highest_score) => {
         const score = parseFloat(highest_score);
         let scoreColor = colors.primary;
@@ -228,25 +308,21 @@ export default function GradesPage() {
         else if (score >= 60) scoreColor = colors.warning;
         
         return (
-          <div style={{ textAlign: "center" }}>
+          <div style={{ 
+            textAlign: "left",
+            padding: "8px 0"
+          }}>
             <div style={{ 
               fontSize: "20px", 
               fontWeight: "700", 
               color: scoreColor,
-              display: "flex",
-              justifyContent: "center",
+              display: "inline-flex",
               alignItems: "center",
               gap: "8px"
             }}>
               {score}
               {score >= 90 && <StarOutlined style={{ fontSize: "18px" }} />}
             </div>
-            <Progress 
-              percent={(score / 100) * 100} 
-              size="small" 
-              strokeColor={scoreColor} 
-              style={{ marginTop: "8px" }}
-            />
           </div>
         );
       }

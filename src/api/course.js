@@ -131,3 +131,13 @@ export const getCourseScores = () => {
 export const getModuleScores = (courseId) => {
   return request.get(`/course/${courseId}/module/scores`);
 };
+
+// 获取考试成绩
+export const getExamScores = () => {
+  return request.get('/exam/scores');
+};
+
+// 获取课程考试成绩
+export const getCourseExamScore = (courseId) => {
+  return request.get(`/exam/course/${courseId}/score`);
+};

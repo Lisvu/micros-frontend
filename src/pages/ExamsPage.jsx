@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, Button, Typography, List, Empty, Spin, Tag, Space } from "antd";
 import { CalendarOutlined, ClockCircleOutlined, BookOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { getUserCourses } from "../api/course";
 
 const { Title, Paragraph } = Typography;
 
@@ -9,36 +10,51 @@ export default function ExamsPage() {
   const [exams, setExams] = useState([]);
 
   useEffect(() => {
-    // 模拟获取考试列表
-    setTimeout(() => {
-      setExams([
-        {
-          id: 1,
-          title: "C语言基础知识测试",
-          description: "测试C语言的基本概念和语法",
-          startTime: "2026-03-15 14:00",
-          duration: 60,
-          status: "upcoming"
-        },
-        {
-          id: 2,
-          title: "数据结构与算法测试",
-          description: "测试数据结构和算法的理解",
-          startTime: "2026-03-20 10:00",
-          duration: 90,
-          status: "upcoming"
-        },
-        {
-          id: 3,
-          title: "Python编程基础测试",
-          description: "测试Python语言的基本概念和语法",
-          startTime: "2026-03-10 09:00",
-          duration: 60,
-          status: "completed"
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
+    // 获取用户已选课程并生成考试列表
+    const fetchCoursesAndGenerateExams = async () => {
+      try {
+        const response = await getUserCourses();
+        const courses = response.data;
+        
+        // 根据课程生成考试列表
+        const generatedExams = courses.map((course, index) => {
+          // 为每门课程生成一个考试
+          const examDate = new Date();
+          examDate.setDate(examDate.getDate() + index * 5); // 每门课程的考试日期间隔5天
+          
+          // 随机设置考试时间
+          const hour = 9 + Math.floor(Math.random() * 6); // 9-14点之间
+          const minute = Math.floor(Math.random() * 60);
+          const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          
+          // 随机设置考试时长
+          const duration = 60 + Math.floor(Math.random() * 60); // 60-120分钟
+          
+          // 随机设置考试状态
+          const statuses = ['upcoming', 'completed'];
+          const status = index % 2 === 0 ? 'upcoming' : 'completed';
+          
+          return {
+            id: course.id,
+            courseId: course.id,
+            title: `${course.title} - 考试`,
+            description: `测试对${course.title}课程内容的掌握程度`,
+            startTime: `${examDate.toISOString().split('T')[0]} ${formattedTime}`,
+            duration: duration,
+            status: status
+          };
+        });
+        
+        setExams(generatedExams);
+      } catch (error) {
+        console.error('获取课程列表失败:', error);
+        setExams([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCoursesAndGenerateExams();
   }, []);
 
   if (loading) {
@@ -101,9 +117,22 @@ export default function ExamsPage() {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
-                      <Typography.Title level={4} style={{ margin: "0 0 8px 0", color: "#1890ff" }}>
-                        {exam.title}
-                      </Typography.Title>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+                        <Typography.Title level={4} style={{ margin: "0", color: "#1890ff" }}>
+                          {exam.title}
+                        </Typography.Title>
+                        <Tag
+                          color={exam.status === "upcoming" ? "blue" : "green"}
+                          style={{
+                            borderRadius: "16px",
+                            padding: "4px 12px",
+                            fontWeight: 500,
+                            fontSize: "12px"
+                          }}
+                        >
+                          {exam.status === "upcoming" ? "即将考试" : "已完成"}
+                        </Tag>
+                      </div>
                       <Paragraph style={{ margin: "0 0 12px 0", color: "#666" }}>
                         {exam.description}
                       </Paragraph>
@@ -118,30 +147,18 @@ export default function ExamsPage() {
                         </div>
                       </div>
                     </div>
-                    <Space direction="vertical" align="end">
-                      <Tag
-                        color={exam.status === "upcoming" ? "blue" : "green"}
-                        style={{
-                          borderRadius: "16px",
-                          padding: "6px 16px",
-                          fontWeight: 500,
-                          fontSize: "14px"
-                        }}
-                      >
-                        {exam.status === "upcoming" ? "即将开始" : "已完成"}
-                      </Tag>
-                      <Button
+                    <Button
                         type={exam.status === "upcoming" ? "primary" : "default"}
-                        size="small"
+                        size="middle"
                         disabled={exam.status === "completed"}
                         style={{
                           borderRadius: "12px",
-                          marginTop: "8px"
+                          padding: "8px 24px",
+                          fontSize: "16px"
                         }}
                       >
                         {exam.status === "upcoming" ? "参加考试" : "查看结果"}
                       </Button>
-                    </Space>
                   </div>
                 </List.Item>
               )}

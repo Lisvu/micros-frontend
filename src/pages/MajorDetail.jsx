@@ -698,7 +698,7 @@ const [moduleProgresses, setModuleProgresses] = useState({}); // 存储每个模
                                   border: "1px solid #ffd700"
                                 }}
                               >
-                                课程分数：{moduleScore}
+                                模块分数：{moduleScore}
                               </Tag>
                               <Tag
                                 color={isCompleted ? "success" : isCurrent ? "processing" : "default"}
