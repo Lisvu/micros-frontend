@@ -1,60 +1,75 @@
 import { useState, useEffect } from "react";
-import { Card, Button, Typography, List, Empty, Spin, Tag, Space } from "antd";
+import { useNavigate } from "react-router-dom";
+import { Card, Button, Typography, List, Empty, Spin, Tag, Space, message } from "antd";
 import { CalendarOutlined, ClockCircleOutlined, BookOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { getUserCourses } from "../api/course";
+import { getExams } from "../api/course";
 
 const { Title, Paragraph } = Typography;
 
 export default function ExamsPage() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [exams, setExams] = useState([]);
 
   useEffect(() => {
-    // 获取用户已选课程并生成考试列表
-    const fetchCoursesAndGenerateExams = async () => {
+    // 获取真实的考试列表
+    const fetchExams = async () => {
       try {
-        const response = await getUserCourses();
-        const courses = response.data;
+        const response = await getExams();
+        const exams = response.data;
         
-        // 根据课程生成考试列表
-        const generatedExams = courses.map((course, index) => {
-          // 为每门课程生成一个考试
-          const examDate = new Date();
-          examDate.setDate(examDate.getDate() + index * 5); // 每门课程的考试日期间隔5天
+        // 格式化考试数据
+        const formattedExams = exams.map((exam) => {
+          // 提取考试时间和日期
+          const examDate = new Date(exam.exam_time);
+          const dateStr = examDate.toISOString().split('T')[0];
+          const timeStr = examDate.toTimeString().split(' ')[0];
           
-          // 随机设置考试时间
-          const hour = 9 + Math.floor(Math.random() * 6); // 9-14点之间
-          const minute = Math.floor(Math.random() * 60);
-          const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          // 计算考试时长（默认90分钟）
+          const duration = 90;
           
-          // 随机设置考试时长
-          const duration = 60 + Math.floor(Math.random() * 60); // 60-120分钟
+          // 检查是否在报名期间
+          const now = new Date();
+          const registrationStart = new Date(exam.registration_start);
+          const registrationEnd = new Date(exam.registration_end);
+          const isRegistrationOpen = now >= registrationStart && now <= registrationEnd;
           
-          // 随机设置考试状态
-          const statuses = ['upcoming', 'completed'];
-          const status = index % 2 === 0 ? 'upcoming' : 'completed';
+          // 确定考试状态
+          let status = exam.status;
+          if (status === 'upcoming' && !isRegistrationOpen) {
+            status = 'not_open';
+          }
           
           return {
-            id: course.id,
-            courseId: course.id,
-            title: `${course.title} - 考试`,
-            description: `测试对${course.title}课程内容的掌握程度`,
-            startTime: `${examDate.toISOString().split('T')[0]} ${formattedTime}`,
+            id: exam.id,
+            courseId: exam.course_id,
+            title: exam.name,
+            description: `测试对${exam.course_title}课程内容的掌握程度`,
+            startTime: `${dateStr} ${timeStr}`,
             duration: duration,
-            status: status
+            status: status,
+            registrationStart: exam.registration_start,
+            registrationEnd: exam.registration_end
           };
         });
         
-        setExams(generatedExams);
+        setExams(formattedExams);
       } catch (error) {
-        console.error('获取课程列表失败:', error);
+        console.error('获取考试列表失败:', error);
+        console.error('错误详情:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          config: error.config
+        });
         setExams([]);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchCoursesAndGenerateExams();
+    fetchExams();
   }, []);
 
   if (loading) {
@@ -122,7 +137,7 @@ export default function ExamsPage() {
                           {exam.title}
                         </Typography.Title>
                         <Tag
-                          color={exam.status === "upcoming" ? "blue" : "green"}
+                          color={exam.status === "upcoming" ? "blue" : exam.status === "not_open" ? "default" : "green"}
                           style={{
                             borderRadius: "16px",
                             padding: "4px 12px",
@@ -130,7 +145,7 @@ export default function ExamsPage() {
                             fontSize: "12px"
                           }}
                         >
-                          {exam.status === "upcoming" ? "即将考试" : "已完成"}
+                          {exam.status === "upcoming" ? "即将考试" : exam.status === "not_open" ? "暂未开放" : "已完成"}
                         </Tag>
                       </div>
                       <Paragraph style={{ margin: "0 0 12px 0", color: "#666" }}>
@@ -145,19 +160,31 @@ export default function ExamsPage() {
                           <ClockCircleOutlined />
                           {exam.duration} 分钟
                         </div>
+                        {exam.status === "not_open" && (
+                          <div style={{ fontSize: "12px", color: "#666" }}>
+                            报名时间: {new Date(exam.registrationStart).toLocaleDateString()} 至 {new Date(exam.registrationEnd).toLocaleDateString()}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button
                         type={exam.status === "upcoming" ? "primary" : "default"}
                         size="middle"
-                        disabled={exam.status === "completed"}
+                        disabled={exam.status === "completed" || exam.status === "not_open"}
+                        onClick={() => {
+                          if (exam.status === "not_open") {
+                            message.info("该考试暂未开始报名");
+                          } else if (exam.status === "upcoming") {
+                            navigate(`/exams/${exam.id}/register`);
+                          }
+                        }}
                         style={{
                           borderRadius: "12px",
                           padding: "8px 24px",
                           fontSize: "16px"
                         }}
                       >
-                        {exam.status === "upcoming" ? "参加考试" : "查看结果"}
+                        {exam.status === "upcoming" ? "参加考试" : exam.status === "not_open" ? "暂未开放" : "查看结果"}
                       </Button>
                   </div>
                 </List.Item>

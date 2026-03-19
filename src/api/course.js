@@ -132,6 +132,26 @@ export const getModuleScores = (courseId) => {
   return request.get(`/course/${courseId}/module/scores`);
 };
 
+// 获取考试列表
+export const getExams = () => {
+  return request.get('/exams');
+};
+
+// 获取考试详情
+export const getExamDetail = (examId) => {
+  return request.get(`/exams/${examId}`);
+};
+
+// 报名参加考试
+export const registerExam = (examId) => {
+  return request.post(`/exams/${examId}/register`);
+};
+
+// 获取考试报名状态
+export const getExamRegistrationStatus = (examId) => {
+  return request.get(`/exams/${examId}/register/status`);
+};
+
 // 获取考试成绩
 export const getExamScores = () => {
   return request.get('/exam/scores');

@@ -19,6 +19,7 @@ import ExamsPage from "./pages/ExamsPage";
 import GradesPage from "./pages/GradesPage";
 import CourseDiscussionPage from "./pages/CourseDiscussionPage";
 import ProgrammingHistoryPage from "./pages/ProgrammingHistoryPage";
+import ExamRegistrationPage from "./pages/ExamRegistrationPage";
 import { getUser } from "./api/auth";
 import "./styles/layout.css";
 
@@ -78,6 +79,7 @@ function App() {
                 <Route path="/course/:id/discussion" element={<CourseDiscussionPage />} />
                 <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="/exams" element={<ExamsPage />} />
+                <Route path="/exams/:examId/register" element={<ExamRegistrationPage />} />
                 <Route path="/grades" element={<GradesPage />} />
                 <Route path="/programming/history/:courseId/:moduleId/:contentId" element={<ProgrammingHistoryPage />} />
                 <Route path="/" element={<Navigate to="/online-learning" replace />} />
