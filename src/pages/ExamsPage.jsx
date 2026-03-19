@@ -48,6 +48,7 @@ export default function ExamsPage() {
             startTime: `${dateStr} ${timeStr}`,
             duration: duration,
             status: status,
+            registered: exam.registered,
             registrationStart: exam.registration_start,
             registrationEnd: exam.registration_end
           };
@@ -97,9 +98,21 @@ export default function ExamsPage() {
             <CalendarOutlined style={{ fontSize: "32px" }} />
             考试中心
           </Title>
-          <Paragraph style={{ fontSize: "16px", color: "#666", lineHeight: "1.6" }}>
+          <Paragraph style={{ fontSize: "16px", color: "#666", lineHeight: "1.6", marginBottom: "24px" }}>
             查看和参加您的课程考试，获取学习成果的评估。
           </Paragraph>
+          <Button
+            type="primary"
+            size="middle"
+            onClick={() => navigate('/my-exams')}
+            style={{
+              borderRadius: "12px",
+              padding: "8px 24px",
+              fontSize: "16px"
+            }}
+          >
+            查看我的考试
+          </Button>
         </div>
       </Card>
 
@@ -147,6 +160,19 @@ export default function ExamsPage() {
                         >
                           {exam.status === "upcoming" ? "即将考试" : exam.status === "not_open" ? "暂未开放" : "已完成"}
                         </Tag>
+                        {exam.registered && (
+                          <Tag
+                            color="green"
+                            style={{
+                              borderRadius: "16px",
+                              padding: "4px 12px",
+                              fontWeight: 500,
+                              fontSize: "12px"
+                            }}
+                          >
+                            已报名
+                          </Tag>
+                        )}
                       </div>
                       <Paragraph style={{ margin: "0 0 12px 0", color: "#666" }}>
                         {exam.description}
@@ -170,7 +196,7 @@ export default function ExamsPage() {
                     <Button
                         type={exam.status === "upcoming" ? "primary" : "default"}
                         size="middle"
-                        disabled={exam.status === "completed" || exam.status === "not_open"}
+                        disabled={exam.status === "completed" || exam.status === "not_open" || exam.registered}
                         onClick={() => {
                           if (exam.status === "not_open") {
                             message.info("该考试暂未开始报名");
@@ -181,10 +207,14 @@ export default function ExamsPage() {
                         style={{
                           borderRadius: "12px",
                           padding: "8px 24px",
-                          fontSize: "16px"
+                          fontSize: "16px",
+                          minWidth: "120px",
+                          textAlign: "center",
+                          pointerEvents: exam.registered ? "none" : "auto",
+                          cursor: exam.registered ? "default" : "pointer"
                         }}
                       >
-                        {exam.status === "upcoming" ? "参加考试" : exam.status === "not_open" ? "暂未开放" : "查看结果"}
+                        {exam.registered ? "已报名" : exam.status === "upcoming" ? "参加考试" : exam.status === "not_open" ? "暂未开放" : "查看结果"}
                       </Button>
                   </div>
                 </List.Item>

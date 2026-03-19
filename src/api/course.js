@@ -152,6 +152,11 @@ export const getExamRegistrationStatus = (examId) => {
   return request.get(`/exams/${examId}/register/status`);
 };
 
+// 取消考试报名
+export const cancelExamRegistration = (examId) => {
+  return request.delete(`/exams/${examId}/register`);
+};
+
 // 获取考试成绩
 export const getExamScores = () => {
   return request.get('/exam/scores');

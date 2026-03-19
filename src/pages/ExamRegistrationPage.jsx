@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Typography, Spin, Alert, Tag, Divider } from "antd";
-import { CalendarOutlined, ClockCircleOutlined, BookOutlined, CheckCircleOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import { getExamDetail, registerExam, getExamRegistrationStatus } from "../api/course";
+import { Card, Button, Typography, Spin, Alert, Tag, Divider, message, Popconfirm } from "antd";
+import { CalendarOutlined, ClockCircleOutlined, BookOutlined, CheckCircleOutlined, ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
+import { getExamDetail, registerExam, getExamRegistrationStatus, cancelExamRegistration } from "../api/course";
 
 const { Title, Paragraph } = Typography;
 
@@ -16,6 +16,7 @@ export default function ExamRegistrationPage() {
   const [registering, setRegistering] = useState(false);
 
   useEffect(() => {
+    // 获取考试详情
     const fetchExamDetail = async () => {
       try {
         setLoading(true);
@@ -26,6 +27,12 @@ export default function ExamRegistrationPage() {
         // 检查报名状态
         const statusResponse = await getExamRegistrationStatus(examId);
         setRegistered(statusResponse.data.registered);
+        
+        // 调试信息
+        console.log('Exam data:', examResponse.data);
+        console.log('Current time:', new Date());
+        console.log('Registration start:', new Date(examResponse.data.registration_start));
+        console.log('Registration end:', new Date(examResponse.data.registration_end));
       } catch (err) {
         console.error('获取考试详情失败:', err);
         setError('获取考试详情失败');
@@ -44,14 +51,28 @@ export default function ExamRegistrationPage() {
       setRegistering(true);
       const response = await registerExam(examId);
       if (response.data.message) {
-        alert('报名成功！');
+        message.success('报名成功！');
         setRegistered(true);
       }
     } catch (err) {
       console.error('报名失败:', err);
-      alert(err.response?.data?.error || '报名失败');
+      console.error('Error response:', err.response);
+      message.error(err.response?.data?.error || '报名失败');
     } finally {
       setRegistering(false);
+    }
+  };
+
+  const handleCancelRegistration = async () => {
+    try {
+      const response = await cancelExamRegistration(examId);
+      if (response.data.message) {
+        message.success('取消报名成功');
+        setRegistered(false);
+      }
+    } catch (err) {
+      console.error('取消报名失败:', err);
+      message.error(err.response?.data?.error || '取消报名失败');
     }
   };
 
@@ -194,33 +215,37 @@ export default function ExamRegistrationPage() {
             )}
 
             <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
-              <Button 
-                type="primary" 
-                size="large"
-                loading={registering}
-                disabled={registered || !isRegistrationOpen}
-                onClick={handleRegister}
-                style={{ 
-                  flex: 1, 
-                  borderRadius: "12px", 
-                  height: "48px",
-                  fontSize: "16px"
-                }}
-              >
-                {registered ? "已报名" : isRegistrationOpen ? "确认报名" : "报名未开放"}
-              </Button>
-              <Button 
-                size="large"
-                onClick={() => navigate(-1)}
-                style={{ 
-                  flex: 1, 
-                  borderRadius: "12px", 
-                  height: "48px",
-                  fontSize: "16px"
-                }}
-              >
-                取消
-              </Button>
+              {!registered && (
+                <>
+                  <Button 
+                    type="primary" 
+                    size="large"
+                    loading={registering}
+                    disabled={!isRegistrationOpen}
+                    onClick={handleRegister}
+                    style={{ 
+                      flex: 1, 
+                      borderRadius: "12px", 
+                      height: "48px",
+                      fontSize: "16px"
+                    }}
+                  >
+                    {isRegistrationOpen ? "确认报名" : "报名未开放"}
+                  </Button>
+                  <Button 
+                    size="large"
+                    onClick={() => navigate(-1)}
+                    style={{ 
+                      flex: 1, 
+                      borderRadius: "12px", 
+                      height: "48px",
+                      fontSize: "16px"
+                    }}
+                  >
+                    取消
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
