@@ -23,6 +23,7 @@ export default function CourseDiscussionPage() {
   const [pageSize, setPageSize] = useState(10); // 每页显示数量
   const [currentUser, setCurrentUser] = useState(null); // 当前用户信息
 
+
   useEffect(() => {
     const fetchCourseDetail = async () => {
       try {
@@ -55,7 +56,12 @@ export default function CourseDiscussionPage() {
         page: currentPage,
         limit: pageSize
       });
-      const questionsData = response.data.data;
+      
+      // 检查响应结构
+      console.log('Discussion API response:', response);
+      
+      const questionsData = response.data.data || [];
+      const total = response.data.total || questionsData.length;
       
       // 格式化问题数据
       const formattedQuestions = questionsData.map(question => ({
@@ -74,20 +80,37 @@ export default function CourseDiscussionPage() {
         likes: question.likes || 0,
         views: question.views || 0,
         answer: question.answer,
-        answeredBy: question.answerer?.name || null
+        answeredBy: question.answerer?.name || null,
+        isExpanded: false // 默认收起状态
       }));
       
       setQuestions(formattedQuestions);
-      setTotalQuestions(response.data.total || 0);
+      setTotalQuestions(total);
+      
+      console.log('Fetched questions:', formattedQuestions);
+      console.log('Total questions:', total);
     } catch (err) {
       console.error('获取问题列表失败:', err);
       message.error('获取问题列表失败');
+      setQuestions([]);
+      setTotalQuestions(0);
     } finally {
       setLoadingQuestions(false);
     }
   }, [id, currentPage, pageSize]);
 
   // 当课程数据加载完成后，获取问题列表
+  // 切换问题展开/收起状态
+  const toggleQuestionExpand = (questionId) => {
+    setQuestions(prevQuestions => 
+      prevQuestions.map(question => 
+        question.id === questionId 
+          ? { ...question, isExpanded: !question.isExpanded } 
+          : question
+      )
+    );
+  };
+
   useEffect(() => {
     if (course) {
       fetchQuestions();
@@ -389,14 +412,29 @@ export default function CourseDiscussionPage() {
                             color: "#666",
                             marginBottom: "6px",
                             lineHeight: "1.4",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis"
-                          }}>
-                            {question.content}
-                          </div>
+                            ...(question.isExpanded ? {} : {
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis"
+                            })
+                          }} dangerouslySetInnerHTML={{ __html: question.content.replace(/\n/g, '<br>') }} />
+                          {question.content.split('\n').length > 2 && (
+                            <Button
+                              type="text"
+                              size="small"
+                              onClick={() => toggleQuestionExpand(question.id)}
+                              style={{
+                                fontSize: "12px",
+                                color: "#1890ff",
+                                padding: 0,
+                                marginBottom: "6px"
+                              }}
+                            >
+                              {question.isExpanded ? "收起" : "展开"}
+                            </Button>
+                          )}
                           <div style={{ 
                             display: "flex", 
                             alignItems: "center", 
@@ -404,18 +442,7 @@ export default function CourseDiscussionPage() {
                             fontSize: "12px",
                             color: "#999"
                           }}>
-                            <span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                              <EyeOutlined style={{ fontSize: "11px" }} />
-                              {question.views}
-                            </span>
-                            <span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                              <CommentOutlined style={{ fontSize: "11px" }} />
-                              {question.replies}
-                            </span>
-                            <span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                              <LikeOutlined style={{ fontSize: "11px" }} />
-                              {question.likes}
-                            </span>
+
                             <span style={{ marginLeft: "auto", fontSize: "11px", display: "flex", alignItems: "center", gap: "8px" }}>
                               {question.author.name} · {question.createdAt}
                               {/* 只有问题作者才能看到删除按钮 */}
@@ -468,14 +495,29 @@ export default function CourseDiscussionPage() {
                                 fontSize: "13px", 
                                 color: "#333",
                                 lineHeight: "1.4",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis"
-                              }}>
-                                {question.answer}
-                              </div>
+                                ...(question.isExpanded ? {} : {
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis"
+                                })
+                              }} dangerouslySetInnerHTML={{ __html: question.answer.replace(/\n/g, '<br>') }} />
+                              {question.answer && question.answer.split('\n').length > 2 && (
+                                <Button
+                                  type="text"
+                                  size="small"
+                                  onClick={() => toggleQuestionExpand(question.id)}
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "#1890ff",
+                                    padding: 0,
+                                    marginTop: "6px"
+                                  }}
+                                >
+                                  {question.isExpanded ? "收起" : "展开"}
+                                </Button>
+                              )}
                             </div>
                           )}
                         </div>
