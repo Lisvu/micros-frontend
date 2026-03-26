@@ -1,0 +1,51 @@
+<svg width="400" height="250" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fee140;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="ai1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="250" fill="url(#bg5)" rx="12" ry="12"/>
+
+  <!-- AI/ML elements -->
+  <!-- Neural network nodes -->
+  <circle cx="80" cy="100" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="120" cy="80" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="120" cy="120" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="160" cy="100" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="200" cy="90" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="200" cy="110" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="240" cy="100" r="8" fill="rgba(255,255,255,0.8)"/>
+
+  <!-- Connections -->
+  <line x1="80" y1="100" x2="120" y2="80" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="80" y1="100" x2="120" y2="120" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="120" y1="80" x2="160" y2="100" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="120" y1="120" x2="160" y2="100" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="160" y1="100" x2="200" y2="90" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="160" y1="100" x2="200" y2="110" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="200" y1="90" x2="240" y2="100" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <line x1="200" y1="110" x2="240" y2="100" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+
+  <!-- Robot/AI icon -->
+  <rect x="300" y="70" width="40" height="30" fill="rgba(255,255,255,0.8)" rx="4"/>
+  <circle cx="310" cy="85" r="3" fill="rgba(0,0,0,0.6)"/>
+  <circle cx="330" cy="85" r="3" fill="rgba(0,0,0,0.6)"/>
+  <rect x="305" y="95" width="10" height="5" fill="rgba(0,0,0,0.6)" rx="1"/>
+  <circle cx="320" cy="110" r="8" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="320" cy="110" r="5" fill="rgba(0,0,0,0.6)"/>
+
+  <!-- Course title -->
+  <text x="200" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">人工智能</text>
+  <text x="200" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">探索AI的无限可能</text>
+
+  <!-- Decorative elements -->
+  <circle cx="30" cy="30" r="4" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="370" cy="220" r="6" fill="rgba(255,255,255,0.4)"/>
+</svg>

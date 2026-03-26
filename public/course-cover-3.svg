@@ -1,0 +1,42 @@
+<svg width="400" height="250" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="design1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="250" fill="url(#bg3)" rx="12" ry="12"/>
+
+  <!-- Design elements -->
+  <!-- Palette -->
+  <rect x="60" y="70" width="40" height="20" fill="#ef4444" rx="2"/>
+  <rect x="60" y="95" width="40" height="20" fill="#f59e0b" rx="2"/>
+  <rect x="60" y="120" width="40" height="20" fill="#10b981" rx="2"/>
+  <rect x="60" y="145" width="40" height="20" fill="#3b82f6" rx="2"/>
+  <rect x="60" y="170" width="40" height="20" fill="#8b5cf6" rx="2"/>
+
+  <!-- Paint brush -->
+  <rect x="120" y="100" width="8" height="60" fill="#8b4513" rx="4"/>
+  <rect x="110" y="100" width="28" height="15" fill="#deb887" rx="2"/>
+  <circle cx="124" cy="85" r="12" fill="#deb887"/>
+  <circle cx="124" cy="75" r="8" fill="#8b4513"/>
+
+  <!-- Geometric shapes -->
+  <circle cx="280" cy="100" r="25" fill="rgba(255,255,255,0.8)"/>
+  <rect x="250" y="140" width="40" height="40" fill="rgba(255,255,255,0.7)" rx="8" transform="rotate(45 270 160)"/>
+  <polygon points="320,80 340,110 300,110" fill="rgba(255,255,255,0.6)"/>
+
+  <!-- Course title -->
+  <text x="200" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">UI/UX设计</text>
+  <text x="200" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">创造美观的用户体验</text>
+
+  <!-- Decorative elements -->
+  <circle cx="30" cy="30" r="4" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="370" cy="220" r="6" fill="rgba(255,255,255,0.4)"/>
+</svg>

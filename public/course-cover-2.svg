@@ -1,0 +1,36 @@
+<svg width="400" height="250" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="data1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#be185d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="250" fill="url(#bg2)" rx="12" ry="12"/>
+
+  <!-- Data visualization elements -->
+  <rect x="60" y="80" width="20" height="60" fill="rgba(255,255,255,0.8)" rx="2"/>
+  <rect x="90" y="60" width="20" height="80" fill="rgba(255,255,255,0.9)" rx="2"/>
+  <rect x="120" y="90" width="20" height="50" fill="rgba(255,255,255,0.7)" rx="2"/>
+  <rect x="150" y="70" width="20" height="70" fill="rgba(255,255,255,0.8)" rx="2"/>
+  <rect x="180" y="50" width="20" height="90" fill="rgba(255,255,255,0.9)" rx="2"/>
+
+  <!-- Pie chart -->
+  <circle cx="300" cy="120" r="30" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="8"/>
+  <path d="M 300 120 L 300 90 A 30 30 0 0 1 330 120 Z" fill="rgba(255,255,255,0.8)"/>
+  <path d="M 300 120 L 330 120 A 30 30 0 0 1 300 150 Z" fill="rgba(255,255,255,0.6)"/>
+  <path d="M 300 120 L 300 150 A 30 30 0 0 1 270 120 Z" fill="rgba(255,255,255,0.4)"/>
+
+  <!-- Course title -->
+  <text x="200" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">数据分析</text>
+  <text x="200" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">掌握数据处理技能</text>
+
+  <!-- Decorative elements -->
+  <circle cx="50" cy="40" r="6" fill="rgba(255,255,255,0.4)"/>
+  <circle cx="350" cy="200" r="8" fill="rgba(255,255,255,0.3)"/>
+</svg>

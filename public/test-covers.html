@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程封面测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .covers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .cover-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .cover-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .cover-info {
+            padding: 16px;
+        }
+        .cover-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        .cover-desc {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>课程封面图片测试</h1>
+    <div class="covers">
+        <div class="cover-item">
+            <img src="http://localhost:3000/course-cover-1.svg" alt="编程基础" class="cover-img">
+            <div class="cover-info">
+                <h3 class="cover-title">编程基础</h3>
+                <p class="cover-desc">从零开始学习编程</p>
+            </div>
+        </div>
+        <div class="cover-item">
+            <img src="http://localhost:3000/course-cover-2.svg" alt="数据分析" class="cover-img">
+            <div class="cover-info">
+                <h3 class="cover-title">数据分析</h3>
+                <p class="cover-desc">掌握数据处理技能</p>
+            </div>
+        </div>
+        <div class="cover-item">
+            <img src="http://localhost:3000/course-cover-3.svg" alt="UI/UX设计" class="cover-img">
+            <div class="cover-info">
+                <h3 class="cover-title">UI/UX设计</h3>
+                <p class="cover-desc">创造美观的用户体验</p>
+            </div>
+        </div>
+        <div class="cover-item">
+            <img src="http://localhost:3000/course-cover-4.svg" alt="商业管理" class="cover-img">
+            <div class="cover-info">
+                <h3 class="cover-title">商业管理</h3>
+                <p class="cover-desc">提升管理技能</p>
+            </div>
+        </div>
+        <div class="cover-item">
+            <img src="http://localhost:3000/course-cover-5.svg" alt="人工智能" class="cover-img">
+            <div class="cover-info">
+                <h3 class="cover-title">人工智能</h3>
+                <p class="cover-desc">探索AI的无限可能</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
